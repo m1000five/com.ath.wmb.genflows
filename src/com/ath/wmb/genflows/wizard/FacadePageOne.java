@@ -86,6 +86,12 @@ public class FacadePageOne extends WizardPage {
 
 	private String nameOfWSDL;
 
+	private String wsdlBinding;
+	
+	private String wsdlPort;
+	
+	private String wsdlSvcPort;
+
 	public FacadePageOne(ISelection selection) {
 		super("Facade Basic Page");
 
@@ -181,7 +187,8 @@ public class FacadePageOne extends WizardPage {
 
 					xpath.setNamespaceContext(context);
 
-					nodeList = (NodeList) xpath.evaluate("//wsdl:operation", getDocumentWSDL(), XPathConstants.NODESET);
+					//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
+					nodeList = (NodeList) xpath.evaluate("//wsdl:operation/@name", getDocumentWSDL(), XPathConstants.NODESET);
 
 					boolean isSet = false;
 					for (int i = 0; i < nodeList.getLength(); i++) {
@@ -235,6 +242,67 @@ public class FacadePageOne extends WizardPage {
 					if (oprname != null) {
 						comboOperations.setText(oprname);
 					}
+					
+					//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
+					nodeList = (NodeList) xpath.evaluate("//wsdl:binding/@name", getDocumentWSDL(), XPathConstants.NODESET);
+					
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						Node currentNode = nodeList.item(i);
+						if (currentNode.getNodeValue() != null) {
+							setWsdlBinding(currentNode.getNodeValue());
+						} else {
+							if (currentNode.getAttributes() != null) {
+								NamedNodeMap attributes = currentNode.getAttributes();
+								for (int j = 0; j < attributes.getLength(); j++) {
+									Node item = attributes.item(j);
+									setWsdlBinding(item.getNodeValue());
+									break;
+								}
+							}
+						}
+						break;
+					}
+					
+					
+					//<wsdl:portType name="CardPswdAssignmentSvc"> 
+					nodeList = (NodeList) xpath.evaluate("//wsdl:portType/@name", getDocumentWSDL(), XPathConstants.NODESET);
+					
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						Node currentNode = nodeList.item(i);
+						if (currentNode.getNodeValue() != null) {
+							setWsdlPort(currentNode.getNodeValue());
+						} else {
+							if (currentNode.getAttributes() != null) {
+								NamedNodeMap attributes = currentNode.getAttributes();
+								for (int j = 0; j < attributes.getLength(); j++) {
+									Node item = attributes.item(j);
+									setWsdlPort(item.getNodeValue());
+									break;
+								}
+							}
+						}
+						break;
+					}
+					
+					nodeList = (NodeList) xpath.evaluate("//wsdl:service/wsdl:port/@name", getDocumentWSDL(), XPathConstants.NODESET);
+					
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						Node currentNode = nodeList.item(i);
+						if (currentNode.getNodeValue() != null) {
+							setWsdlSvcPort(currentNode.getNodeValue());
+						} else {
+							if (currentNode.getAttributes() != null) {
+								NamedNodeMap attributes = currentNode.getAttributes();
+								for (int j = 0; j < attributes.getLength(); j++) {
+									Node item = attributes.item(j);
+									setWsdlSvcPort(item.getNodeValue());
+									break;
+								}
+							}
+						}
+						break;
+					}
+					
 					
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -571,6 +639,30 @@ public class FacadePageOne extends WizardPage {
 
 	public void setComboOperations(Combo comboOperations) {
 		this.comboOperations = comboOperations;
+	}
+
+	public String getWsdlBinding() {
+		return wsdlBinding;
+	}
+
+	public void setWsdlBinding(String wsdlBinding) {
+		this.wsdlBinding = wsdlBinding;
+	}
+
+	public String getWsdlPort() {
+		return wsdlPort;
+	}
+
+	public void setWsdlPort(String wsdlPort) {
+		this.wsdlPort = wsdlPort;
+	}
+
+	public String getWsdlSvcPort() {
+		return wsdlSvcPort;
+	}
+
+	public void setWsdlSvcPort(String wsdlSvcPort) {
+		this.wsdlSvcPort = wsdlSvcPort;
 	}
 
 }

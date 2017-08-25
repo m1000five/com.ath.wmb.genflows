@@ -176,6 +176,11 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			facadeProject.setOrgName(one.getOrgname());
 			facadeProject.setBankId(one.getBankid());
 			
+			facadeProject.setWsdlName(one.getNameOfWSDL());
+			facadeProject.setWsdlBinding(one.getWsdlBinding());
+			facadeProject.setWsdlPort(one.getWsdlPort());
+			facadeProject.setWsdlSvcPort(one.getWsdlSvcPort());
+			
 			facadeProject.setIdeRequirement(three.getTextIdeRequirement().getText());
 			try {
 				facadeProject.setSrvId(Integer.parseInt(facadeProject.getIdeRequirement()));

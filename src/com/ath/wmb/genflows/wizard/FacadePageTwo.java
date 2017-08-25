@@ -30,7 +30,7 @@ import com.ath.wmb.genflows.Activator;
 
 
 public class FacadePageTwo extends WizardPage {
-
+	//TODO terminar esta seccion del wizard para agregar especificos y generar los proyectos
 	
 	private Composite container;
 	
