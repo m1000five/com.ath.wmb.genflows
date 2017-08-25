@@ -353,6 +353,7 @@ public class FacadePageOne extends WizardPage {
 		srvnameText.addModifyListener(listener);
 		oprnameText.addModifyListener(listener);
 		comboDomains.addModifyListener(listener);
+		comboChannels.addModifyListener(listener);
 		// orgText.addModifyListener(listener);
 		// bankidText.addModifyListener(listener);
 		//
