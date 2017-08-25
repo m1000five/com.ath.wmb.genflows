@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -24,8 +21,10 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 
 import com.ath.esqltool.domain.BAthFacadeProject;
-import com.ath.esqltool.domain.BAthParticularProject;
-import com.ath.wmb.genflows.Activator;
+import com.ath.esqltool.domain.BAthOrchestable;
+import com.ath.esqltool.domain.BAthSpecificBo;
+import com.ath.wmb.genflows.general.FacadeConstants;
+
 
 
 
@@ -34,36 +33,35 @@ public class FacadePageTwo extends WizardPage {
 	
 	private Composite container;
 	
-	private Integer numberParticulars = 0;
+	private Integer numberOrchestables = 0;
 
-	private Button checkImpl;
+	private Button checkPassthrough;
 
 	private Combo comboparticulars;
 	private Button[] radiosParticular;
 	private Group groupparticular;
-	private Combo comboapps;
+	private Combo combobanks;
 	private Combo combocntls;
 	
 	private Group group;
-	private Text searchText;
+	private Text codserviceText;
 	private Button searchcntlbutton;
 	
 	private Button addParticularButton;
 	private Button clearParticularButton;
-	private org.eclipse.swt.widgets.List listWidgetsParts;
+	private org.eclipse.swt.widgets.List listDescSteps;
 	
-	private List<BAthParticularProject> listParticulars = null;
+	private List<BAthOrchestable> listOrchestables = new ArrayList<BAthOrchestable>();
+	private List<BAthSpecificBo> listSpecificsBo = new ArrayList<BAthSpecificBo>();
 	
-	
-	
-	private BAthFacadeProject ctrlProject;
+	private BAthFacadeProject facadeProject;
 
 	public FacadePageTwo(ISelection selection) {
-		super("Facade Particulars Page");
-		setTitle("Particulars");
-		setDescription("Facade Wizard: Add particulars to Facade");
+		super("Facade Specific Page");
+		setTitle("Specifics");
+		setDescription("Facade Wizard: Add Specific to Facade");
 		
-		listParticulars = new ArrayList<BAthParticularProject>();
+		setListOrchestables(new ArrayList<BAthOrchestable>());
 
 	}
 
@@ -80,293 +78,176 @@ public class FacadePageTwo extends WizardPage {
 		
 		
 
-		checkImpl = new Button(container, SWT.CHECK);
-		checkImpl.setText("Defined");
-		checkImpl.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		checkImpl.addSelectionListener(new SelectionAdapter() {
+		checkPassthrough = new Button(container, SWT.CHECK);
+		checkPassthrough.setText("Is Passthrough?");
+		checkPassthrough.setSelection(true);
+		checkPassthrough.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+		checkPassthrough.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 
-				Button btn = (Button) event.getSource();
-				System.out.println(btn.getSelection());
-
-				if (btn.getSelection()) {
-					setDefaultVisibility("IMPLEMENTABLE");
-					radiosParticular[0].setSelection(true);
-				} else {
-					setDefaultVisibility("NOT_IMPLEMENTABLE");
-				}
+				
 			}
 		});
 
-		// Group group = new Group(container, SWT.NONE);
-		// group.setLayout(new GridLayout(1, false));
-
-		// GridLayout layout = new GridLayout();
-		// container.setLayout(new GridLayout(1, false));
-
-		radiosParticular = new Button[3];
-		radiosParticular[0] = new Button(container, SWT.RADIO);
-		radiosParticular[0].setSelection(true);
-		radiosParticular[0].setText("FMG");
-		radiosParticular[0].setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		radiosParticular[0].addSelectionListener(new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-
-				Button btn = (Button) event.getSource();
-				System.out.println(btn.getSelection());
-
-				if (btn.getSelection()) {
-					setDefaultVisibility("IS_FMG");
-				} else {
-					setDefaultVisibility("IS_CNTL");
-				}
-			}
-		});
-
-		radiosParticular[1] = new Button(container, SWT.RADIO);
-		radiosParticular[1].setText("CNTL");
-		radiosParticular[1].setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+		
 
 		groupparticular = new Group(container, SWT.NONE);
 		groupparticular.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		//groupfmg.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		groupparticular.setLayout(new GridLayout(3, false));
+		groupparticular.setLayout(new GridLayout(4, false));
 
 		Label label4 = new Label(groupparticular, SWT.NONE);
-		label4.setText("App");
+		label4.setText(FacadeConstants.MSG_BANK_LABEL);
 
 		List<Object> listapps = null;
 		
 
-		comboapps = new Combo(groupparticular, SWT.READ_ONLY);
-		comboapps.setBounds(50, 50, 150, 65);
-		String arrayapps[];
-		if (listapps != null) {
-//			arrayapps = new String[listapps.size()];
-//			Iterator<BAppBo> it = listapps.iterator();
-//			int i = 0;
-//			while (it.hasNext()) {
-//				BAppBo bAppBo = (BAppBo) it.next();
-//				arrayapps[i] = bAppBo.getApplication_id();
-//				i++;
-//
-//			}
-		} else {
-			
-		}
-		arrayapps = new String[1];
-		arrayapps[0] = "AUT";
+		setCombobanks(new Combo(groupparticular, SWT.READ_ONLY));
+		getCombobanks().setBounds(50, 50, 150, 65);
+		String arraybanks[] = {"BAVV", "BBOG", "BPOP", "BOCC"};
 
-		comboapps.setItems(arrayapps);
+		getCombobanks().setItems(arraybanks);
 
-		comboapps.addSelectionListener(new SelectionAdapter() {
+		getCombobanks().addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
-				System.out.println(comboapps.getText());
-				ILog log = Activator.getDefault().getLog();
-//				try {
+				
+
+			}
+		});
+
+		
+
+		Label labelCntl = new Label(groupparticular, SWT.NONE);
+		labelCntl.setText("Cod Service:");
+
+		codserviceText = new Text(groupparticular, SWT.BORDER | SWT.SINGLE);
+		codserviceText.setText("");
+
+		
+//		searchcntlbutton = new Button(group, SWT.BUTTON1);
+//		searchcntlbutton.setText("Search");
 //
-//					listparticulars = databaseDao.findByAppId(comboapps.getText());
+//		searchcntlbutton.addListener(SWT.Selection, new Listener() {
+//			public void handleEvent(Event event) {
+//				if (event.widget == searchcntlbutton) {
+//					System.out.println("buscar");
+//					ILog log = Activator.getDefault().getLog();
+//					if (searchText.getText() != null && searchText.getText() != ""
+//							&& searchText.getText().length() > 5) {
+//						
+//						Integer ctrl = null;
+//						try {
+//							ctrl = Integer.parseInt(searchText.getText());
+//						} catch (NumberFormatException e) {}						
+//						
+////						try {
+////							String arraycntls[];
+////							if(ctrl != null) { 
+////								System.out.println(ctrl);
+////								BCntlBo cntlBo = databaseDao.findCtnlById(ctrl);
+////								System.out.println(cntlBo);
+////								arraycntls = new String[1];
+////								arraycntls[0] = cntlBo.getFacade_id() + "|" + cntlBo.getService_name();
+////								
+////								combocntls.setItems(arraycntls);
+////								listcntls = new ArrayList<BCntlBo>();
+////								listcntls.add(cntlBo);
+////							} else {
+////								listcntls = databaseDao.findAllCtnlByCriteria(cntlsearchText.getText());
+////								System.out.println(listcntls);
+////								
+////								
+////								
+////								if (listcntls != null) {
+////									arraycntls = new String[listcntls.size()];
+////									Iterator<BCntlBo> it = listcntls.iterator();
+////									int i = 0;
+////									while (it.hasNext()) {
+////										BCntlBo cntlBo = (BCntlBo) it.next();
+////										arraycntls[i] = cntlBo.getFacade_id() + "|" + cntlBo.getFacade_name();
+////										i++;
+////
+////									}
+////								} else {
+////									arraycntls = new String[1];
+////									arraycntls[0] = "                         ";
+////								}
+////
+////								combocntls.setItems(arraycntls);
+////								
+////								
+////								
+////							}
+////						} catch (Exception e) {
+////							e.printStackTrace();
+////							log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
+////						}
 //
-//					System.out.println(listparticulars);
-//
-//					if (listparticulars != null && !listparticulars.isEmpty()) {
-//
-//						String arrayparticulars[];
-//
-//						arrayparticulars = new String[listparticulars.size()];
-//						Iterator<BParticularBo> it = listparticulars.iterator();
-//						int i = 0;
-//						while (it.hasNext()) {
-//							BParticularBo bParticularBo = (BParticularBo) it.next();
-//							arrayparticulars[i] = bParticularBo.getParticular_id() + "|"+ bParticularBo.getParticular_input_mq() + "|" + bParticularBo.getParticular_name();
-//							i++;
-//
-//						}
-//
-//						comboparticulars.setItems(arrayparticulars);
 //					}
 //
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
+//					
+//
 //				}
-
-			}
-		});
-
-		comboparticulars = new Combo(groupparticular, SWT.READ_ONLY);
-		comboparticulars.setBounds(50, 50, 550, 65);
-		String arrayparticulars[] = { "                                                                " };
-		comboparticulars.setItems(arrayparticulars);
-		
-		
-
-		group = new Group(container, SWT.NONE);
-		group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		//groupcntl.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		group.setLayout(new GridLayout(4, false));
-
-		Label labelCntl = new Label(group, SWT.NONE);
-		labelCntl.setText("Cntl:");
-
-		searchText = new Text(group, SWT.BORDER | SWT.SINGLE);
-		searchText.setText("");
-
-		searchcntlbutton = new Button(group, SWT.BUTTON1);
-		searchcntlbutton.setText("Search");
-
-		searchcntlbutton.addListener(SWT.Selection, new Listener() {
-			public void handleEvent(Event event) {
-				if (event.widget == searchcntlbutton) {
-					System.out.println("buscar");
-					ILog log = Activator.getDefault().getLog();
-					if (searchText.getText() != null && searchText.getText() != ""
-							&& searchText.getText().length() > 5) {
-						
-						Integer ctrl = null;
-						try {
-							ctrl = Integer.parseInt(searchText.getText());
-						} catch (NumberFormatException e) {}						
-						
-//						try {
-//							String arraycntls[];
-//							if(ctrl != null) { 
-//								System.out.println(ctrl);
-//								BCntlBo cntlBo = databaseDao.findCtnlById(ctrl);
-//								System.out.println(cntlBo);
-//								arraycntls = new String[1];
-//								arraycntls[0] = cntlBo.getFacade_id() + "|" + cntlBo.getService_name();
-//								
-//								combocntls.setItems(arraycntls);
-//								listcntls = new ArrayList<BCntlBo>();
-//								listcntls.add(cntlBo);
-//							} else {
-//								listcntls = databaseDao.findAllCtnlByCriteria(cntlsearchText.getText());
-//								System.out.println(listcntls);
-//								
-//								
-//								
-//								if (listcntls != null) {
-//									arraycntls = new String[listcntls.size()];
-//									Iterator<BCntlBo> it = listcntls.iterator();
-//									int i = 0;
-//									while (it.hasNext()) {
-//										BCntlBo cntlBo = (BCntlBo) it.next();
-//										arraycntls[i] = cntlBo.getFacade_id() + "|" + cntlBo.getFacade_name();
-//										i++;
-//
-//									}
-//								} else {
-//									arraycntls = new String[1];
-//									arraycntls[0] = "                         ";
-//								}
-//
-//								combocntls.setItems(arraycntls);
-//								
-//								
-//								
-//							}
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//							log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
-//						}
-
-					}
-
-					
-
-				}
-			}
-		});
-		
-		
-		
-		
-		combocntls = new Combo(group, SWT.READ_ONLY);
-		combocntls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		//combocntls.setBounds(50, 50, 750, 65); 
-		String cntls[] = {"                      "};
-		
-		combocntls.setItems(cntls);
+//			}
+//		});
+//		
+//		
+//		
+//		
+//		combocntls = new Combo(group, SWT.READ_ONLY);
+//		combocntls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//		//combocntls.setBounds(50, 50, 750, 65); 
+//		String cntls[] = {"                      "};
+//		
+//		combocntls.setItems(cntls);
 
 		addParticularButton = new Button(container, SWT.BUTTON1);
-		addParticularButton.setText("Add Particular");
+		addParticularButton.setText("Add Specific");
 
 		addParticularButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
 		
 		addParticularButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				if (event.widget == addParticularButton) {
-					if (checkImpl.getSelection()) {
-						if(radiosParticular[0].getSelection()){//ES FMG
-							//bParticularBo.getParticular_id() + "|"+ bParticularBo.getParticular_input_mq() + "-" + bParticularBo.getParticular_name();
-							//arrayStepsStrings[i].split("\\|");
-							String[] arrayParticular = comboparticulars.getText().split("\\|");
-							
-							if (arrayParticular.length > 2) {
-								
-//								BParticularBo fmgBo = new BParticularBo(arrayParticular);
-//								
-//								listParticulars.add(fmgBo);
-
-								setPageComplete(true);
-							}
-						} else {
-							
-//							String[] arrayCntls = combocntls.getText().split("\\|");
-//							
-//							if (arrayCntls.length > 1) {
-//								
-//								BCntlBo cntlBo = new BCntlBo(arrayCntls);
-//								
-//								listParticulars.add(cntlBo);
-//								setPageComplete(true);
-//							}
-							
-						}
-					} else {
-						
-						//listParticulars.add(new BUndefinedStep());
-						
-						setPageComplete(true);
-					}
+					BAthSpecificBo athSpecificBo = new BAthSpecificBo();
 					
-					listWidgetsParts.removeAll();
+					athSpecificBo.setName(facadeProject.getSrvName());
+					athSpecificBo.setBankOrg(combobanks.getText());
+					athSpecificBo.setCodService(codserviceText.getText());
 					
-					Iterator<BAthParticularProject> iterator = listParticulars.iterator();
-					numberParticulars = 0; 
+					getListOrchestables().add(athSpecificBo); 
+					getListSpecificsBo().add(athSpecificBo); 
+					
+					listDescSteps.removeAll();
+					
+					Iterator<BAthOrchestable> iterator = getListOrchestables().iterator();
+					numberOrchestables = 1; 
+					
 					while (iterator.hasNext()) {
-						BAthParticularProject bStepOrchestable = (BAthParticularProject) iterator.next();
-//						listSteps.add("Step " + numberSteps + "->|"+ bStepOrchestable.getLongDescription());
-						numberParticulars++;
+						BAthOrchestable bStepOrchestable = (BAthOrchestable) iterator.next();
+						listDescSteps.add("Specific " + numberOrchestables + "->|"+ bStepOrchestable.getLongDescription());
+						numberOrchestables++;
 					}
 					
 
-					checkImpl.setSelection(false);
-					radiosParticular[0].setSelection(false);
-					radiosParticular[1].setSelection(false);
+					checkPassthrough.setSelection(true);
 					
-					setDefaultVisibility("DEFAULT");
 				}
 			}
 		});
 		
 		
-		
-		
 
-		listWidgetsParts = new org.eclipse.swt.widgets.List(container, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
-		listWidgetsParts.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+		listDescSteps = new org.eclipse.swt.widgets.List(container, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+		listDescSteps.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
 		
 		//listSteps.setBounds(50, 50, 650, 65);
 		
-		listWidgetsParts.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		listDescSteps.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		
 		
@@ -375,20 +256,19 @@ public class FacadePageTwo extends WizardPage {
 
 		clearParticularButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
 		
-		
 		clearParticularButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				if (event.widget == clearParticularButton) {
-					listParticulars.clear();
-					listWidgetsParts.removeAll();
-					setNumberSteps(0);
+					getListOrchestables().clear();
+					listDescSteps.removeAll();
+					setNumberParticulars(0);
 				}
 			}
 		});
 		
 		
 
-		setDefaultVisibility("DEFAULT");
+		//setDefaultVisibility("DEFAULT");
 
 		
 		setControl(container);
@@ -404,86 +284,86 @@ public class FacadePageTwo extends WizardPage {
 	public void setDefaultVisibility(String typeChange) {
 		if (typeChange == "DEFAULT") {
 
-			checkImpl.setVisible(true);
+			checkPassthrough.setVisible(true);
 
 			radiosParticular[0].setVisible(false);
 			radiosParticular[1].setVisible(false);
 
 			groupparticular.setVisible(false);
-			comboapps.setVisible(false);
+			getCombobanks().setVisible(false);
 			comboparticulars.setVisible(false);
 
 			group.setVisible(false);
-			searchText.setVisible(false);
+			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
 
 
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
-			listWidgetsParts.setVisible(true);
+			listDescSteps.setVisible(true);
 		} else if (typeChange == "IMPLEMENTABLE") {
 			radiosParticular[0].setVisible(true);
 			radiosParticular[1].setVisible(true);
 
 			groupparticular.setVisible(true);
-			comboapps.setVisible(true);
+			getCombobanks().setVisible(true);
 			comboparticulars.setVisible(true);
 
 			group.setVisible(false);
-			searchText.setVisible(false);
+			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
 
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
-			listWidgetsParts.setVisible(true);
+			listDescSteps.setVisible(true);
 
 		} else if (typeChange == "NOT_IMPLEMENTABLE") {
 			radiosParticular[0].setVisible(false);
 			radiosParticular[1].setVisible(false);
 
 			groupparticular.setVisible(false);
-			comboapps.setVisible(false);
+			getCombobanks().setVisible(false);
 			comboparticulars.setVisible(false);
 
 			group.setVisible(false);
-			searchText.setVisible(false);
+			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
 
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
-			listWidgetsParts.setVisible(true);
+			listDescSteps.setVisible(true);
 
 		} else if (typeChange == "IS_FMG") {
 			radiosParticular[0].setVisible(true);
 			radiosParticular[1].setVisible(true);
 
 			groupparticular.setVisible(true);
-			comboapps.setVisible(true);
+			getCombobanks().setVisible(true);
 			comboparticulars.setVisible(true);
 
 			group.setVisible(false);
-			searchText.setVisible(false);
+			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
 			
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
-			listWidgetsParts.setVisible(true);
+			listDescSteps.setVisible(true);
 
 		} else if (typeChange == "IS_CNTL") {
 			radiosParticular[0].setVisible(true);
 			radiosParticular[1].setVisible(true);
 
 			groupparticular.setVisible(false);
-			comboapps.setVisible(false);
+			getCombobanks().setVisible(false);
 			comboparticulars.setVisible(false);
 
 			group.setVisible(true);
-			searchText.setVisible(true);
+			codserviceText.setVisible(true);
 			searchcntlbutton.setVisible(true);
 
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
-			listWidgetsParts.setVisible(true);
+			listDescSteps.setVisible(true);
 
 		}
 
@@ -497,11 +377,11 @@ public class FacadePageTwo extends WizardPage {
 	
 
 	public Button getCheckImpl() {
-		return checkImpl;
+		return checkPassthrough;
 	}
 
 	public void setCheckImpl(Button checkImpl) {
-		this.checkImpl = checkImpl;
+		this.checkPassthrough = checkImpl;
 	}
 
 	public Button[] getRadiosParticular() {
@@ -529,49 +409,85 @@ public class FacadePageTwo extends WizardPage {
 	}
 
 	public Text getCntlsearchText() {
-		return searchText;
+		return codserviceText;
 	} 
 
 	public void setCntlsearchText(Text cntlsearchText) {
-		this.searchText = cntlsearchText;
+		this.codserviceText = cntlsearchText;
 	}
 
 	
 	public org.eclipse.swt.widgets.List getListSteps() {
-		return listWidgetsParts;
+		return listDescSteps;
 	}
 
 	public void setListSteps(org.eclipse.swt.widgets.List listSteps) {
-		this.listWidgetsParts = listSteps;
+		this.listDescSteps = listSteps;
 	}
 
-	public Integer getNumberSteps() {
-		return numberParticulars; 
+	public Integer getNumberParticulars() {
+		return numberOrchestables; 
 	}
 
-	public void setNumberSteps(Integer numberSteps) {
-		this.numberParticulars = numberSteps;
+	public void setNumberParticulars(Integer numberSteps) {
+		this.numberOrchestables = numberSteps;
 	}
 
 
 	public BAthFacadeProject getFacadeProject() {
-		return ctrlProject;
+		return facadeProject;
 	}
 
 	public void setFacadeProject(BAthFacadeProject ctrlProject) {
-		this.ctrlProject = ctrlProject;
+		this.facadeProject = ctrlProject;
 	}
 
 
 
-	public List<BAthParticularProject> getListStepsOrchestables() {
-		return listParticulars;
+	public List<BAthOrchestable> getListStepsOrchestables() {
+		return getListOrchestables();
 	}
 
 
 
-	public void setListStepsOrchestables(List<BAthParticularProject> listStepsOrchestables) {
-		this.listParticulars = listStepsOrchestables;
+	public void setListStepsOrchestables(List<BAthOrchestable> listStepsOrchestables) {
+		this.setListOrchestables(listStepsOrchestables);
+	}
+
+
+
+	public Combo getCombobanks() {
+		return combobanks;
+	}
+
+
+
+	public void setCombobanks(Combo combobanks) {
+		this.combobanks = combobanks;
+	}
+
+
+
+	public List<BAthSpecificBo> getListSpecificsBo() {
+		return listSpecificsBo;
+	}
+
+
+
+	public void setListSpecificsBo(List<BAthSpecificBo> listSpecificsBo) {
+		this.listSpecificsBo = listSpecificsBo;
+	}
+
+
+
+	public List<BAthOrchestable> getListOrchestables() {
+		return listOrchestables;
+	}
+
+
+
+	public void setListOrchestables(List<BAthOrchestable> listOrchestables) {
+		this.listOrchestables = listOrchestables;
 	}
 	
 	

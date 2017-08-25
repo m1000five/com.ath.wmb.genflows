@@ -81,6 +81,7 @@ public class FacadePageOne extends WizardPage {
 	private Button mButtonWsdl;
 
 	private BAthFacadeProject facadeProject;
+	
 
 	private Document documentWSDL = null;
 
@@ -467,6 +468,12 @@ public class FacadePageOne extends WizardPage {
 			labelProjName.setVisible(true);
 			labelProjValue.setText(projectname);
 			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			
+			facadeProject.setDomain(getDomain());
+			facadeProject.setSrvName(getSrvname());
+			facadeProject.setOprName(getOprname());
+			
 			//
 			// int length = projectname.length();
 			//
@@ -538,7 +545,7 @@ public class FacadePageOne extends WizardPage {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("CtrlPageOne [domain=");
+		builder.append("FacadePageOne [domain=");
 		builder.append(domain);
 		builder.append(", channel=");
 		builder.append(getChannel());
@@ -561,13 +568,7 @@ public class FacadePageOne extends WizardPage {
 		return super.getNextPage();
 	}
 
-	public BAthFacadeProject getFacadeProject() {
-		return facadeProject;
-	}
 
-	public void setFacadeProject(BAthFacadeProject facadeProject) {
-		this.facadeProject = facadeProject;
-	}
 
 	public String getChannel() {
 		return channel;
@@ -663,6 +664,14 @@ public class FacadePageOne extends WizardPage {
 
 	public void setWsdlSvcPort(String wsdlSvcPort) {
 		this.wsdlSvcPort = wsdlSvcPort;
+	}
+
+	public BAthFacadeProject getFacadeProject() {
+		return facadeProject;
+	}
+
+	public void setFacadeProject(BAthFacadeProject facadeProject) {
+		this.facadeProject = facadeProject;
 	}
 
 }

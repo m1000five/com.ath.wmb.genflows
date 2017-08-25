@@ -2,6 +2,7 @@ package com.ath.wmb.genflows.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,11 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 import com.ath.esqltool.delegates.BAthGenerator;
+import com.ath.esqltool.delegates.BAthParticularGenerator;
 import com.ath.esqltool.domain.BAthFacadeProject;
+import com.ath.esqltool.domain.BAthOrchestable;
+import com.ath.esqltool.domain.BAthParticularProject;
+import com.ath.esqltool.domain.BAthSpecificBo;
 import com.ath.esqltool.util.BUtil;
 import com.ath.wmb.genflows.Activator;
 
@@ -51,6 +56,8 @@ public class FacadeWizard extends Wizard implements INewWizard {
 	boolean step4CreateQueues = false;
 
 	private BAthFacadeProject facadeProject = new BAthFacadeProject();
+	
+	private List<BAthParticularProject> listParticulars = new ArrayList<BAthParticularProject>();
 
 	public FacadeWizard() {
 		super();
@@ -215,6 +222,43 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			}
 			
 			step1CreateProject = true;
+			
+			
+			if (two.getListSpecificsBo() != null && !two.getListSpecificsBo().isEmpty()) {
+				
+				Iterator<BAthSpecificBo> iterator = two.getListSpecificsBo().iterator();
+				while (iterator.hasNext()) {
+					BAthSpecificBo bAthSpecific = (BAthSpecificBo) iterator.next();
+					
+					BAthParticularProject particular = BAthParticularProject.valueOf(facadeProject);
+					
+//					particular.setName(bAthSpecific.getName() + "Svc_" + bAthSpecific.getBankOrg());
+					particular.setOrgName(bAthSpecific.getBankOrg());
+					particular.setBankId(particular.getBankId());//TODO agregar el bankID propio del especifico??
+					particular.setCodService(bAthSpecific.getCodService());
+					listParticulars.add(particular);
+					
+				}
+				
+				if (listParticulars != null && !listParticulars.isEmpty()) {
+					
+					Iterator<BAthParticularProject> iteratorParticulars = listParticulars.iterator();
+					
+					BAthParticularGenerator particularGen = new BAthParticularGenerator();
+					
+					while (iteratorParticulars.hasNext()) {
+						BAthParticularProject bAthParticularProject = (BAthParticularProject) iteratorParticulars
+								.next();
+						
+						particularGen.generar(bAthParticularProject);
+						
+						
+					}
+					
+				}
+				
+			}
+			
 
 		} catch (Exception e) {
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
@@ -269,6 +313,22 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(description.getName());
 			project.create(description, null);
 			project.open(null);
+			
+			if (listParticulars != null && !listParticulars.isEmpty()) {
+				Iterator<BAthParticularProject> iteratorParticulars = listParticulars.iterator();
+				
+				while (iteratorParticulars.hasNext()) {
+					BAthParticularProject bAthParticularProject = (BAthParticularProject) iteratorParticulars
+							.next();
+					
+					IProjectDescription descParticular = null;
+					descParticular = ResourcesPlugin.getWorkspace().loadProjectDescription(new Path(bAthParticularProject.getProjectPath() + ".project"));
+					IProject projectPart = ResourcesPlugin.getWorkspace().getRoot().getProject(bAthParticularProject.getName());
+					projectPart.create(descParticular, null);
+					projectPart.open(null);
+					
+				}
+			}
 
 		} catch (CoreException exception_p) {
 			exception_p.printStackTrace();

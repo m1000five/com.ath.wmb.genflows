@@ -3,7 +3,7 @@ package com.ath.wmb.genflows.general;
 public interface FacadeConstants {
 	public String NAMESPACE_LABEL = "Namespace";
 	public String ID_LABEL = "ID Requirement";
-	public String PARTICULAR_LABEL = "ID Particular";
+	public String PARTICULAR_LABEL = "Specific";
 	public String STEPS_LABEL = "Steps";
 	public String DOMAIN_LABEL = "Domain"; 
 	public String CHANNEL_LABEL = "Channel";
