@@ -148,7 +148,6 @@ public class FacadePageOne extends WizardPage {
 				}
 				textWSDLLocation.setText(path);
 				try {
-					// TODO cargar operaciones del WSDL
 
 					File inputSource = new File(path);
 
