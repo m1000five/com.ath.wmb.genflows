@@ -1,10 +1,10 @@
 package com.ath.wmb.genflows.wizard;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -34,20 +34,20 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.ath.esqltool.domain.BAthFacadeProject;
-import com.ath.esqltool.domain.BValDomainBo;
 import com.ath.wmb.genflows.Activator;
 import com.ath.wmb.genflows.general.FacadeConstants;
+import com.ath.wmb.genflows.general.NamespaceContextMap;
 
 public class FacadePageOne extends WizardPage {
 
 	private Composite container;
 
 	private String namespace;
-	
 
 	private String domain;
 	private String srvname;
@@ -56,37 +56,35 @@ public class FacadePageOne extends WizardPage {
 	private String orgname;
 	private String bankid;
 	private String channel;
-	
-	private LinkedHashSet<String> setOthersNamespaces =  new LinkedHashSet<String>();
 
+	private LinkedHashSet<String> setOperations = new LinkedHashSet<String>();
+	private LinkedHashSet<String> setOthersNamespaces = new LinkedHashSet<String>();
 
-	private Text srvnameText;
 	private Combo comboDomains;
 	private Combo comboChannels;
+	private Combo comboOperations;
 
+	private Text srvnameText;
 	private Text oprnameText;
 	private Text orgText;
 	private Text bankidText;
+	private Text textWSDLLocation;
 
 	private Button checkAutoIdCntl;
+	private Button checkCustomOperation;
 
 	private Label labelProjName;
 	private Label labelProjValue;
 
-	private Text textWSDLLocation;
 
 	private Button mButtonSelection;
 	private Button mButtonWsdl;
 
 	private BAthFacadeProject facadeProject;
 
-	private HashMap<String, BValDomainBo> mapOperations = null;
-	
 	private Document documentWSDL = null;
 
 	private String nameOfWSDL;
-	
-	
 
 	public FacadePageOne(ISelection selection) {
 		super("Facade Basic Page");
@@ -95,7 +93,7 @@ public class FacadePageOne extends WizardPage {
 		setDescription("Facade Wizard: Basic data for the new Facade");
 
 		namespace = "urn://grupoaval.com/[domain]/v1/";
-		
+
 		domain = "";
 		setChannel("");
 		srvname = "";
@@ -133,6 +131,8 @@ public class FacadePageOne extends WizardPage {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
+				// TODO revisar si se puede separar esta logica de carga y analisis del WSDL
+				// para que no este en este Listener del control
 				FileDialog dlg = new FileDialog(mButtonWsdl.getShell(), SWT.OPEN);
 				dlg.setText("Open");
 				String path = dlg.open();
@@ -141,38 +141,100 @@ public class FacadePageOne extends WizardPage {
 				}
 				textWSDLLocation.setText(path);
 				try {
-					//TODO cargar operaciones del WSDL
-					
+					// TODO cargar operaciones del WSDL
+
 					File inputSource = new File(path);
-					
+
 					setNameOfWSDL(inputSource.getName());
-					
+					if (getNameOfWSDL().indexOf(".") != -1) {
+						srvname = getNameOfWSDL().substring(0, getNameOfWSDL().indexOf("."));
+						srvnameText.setText(srvname);
+					}
+
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(true); //This is really important, without it that XPath does not work
+					dbf.setNamespaceAware(true); // This is really important, without it that XPath does not work
 					DocumentBuilder db = dbf.newDocumentBuilder();
-					setDocumentWSDL(db.parse(inputSource)); //inputSource, inputStream or file which contains your XML.
-					
+					setDocumentWSDL(db.parse(inputSource)); // inputSource, inputStream or file which contains your XML.
+
 					XPath xpath = XPathFactory.newInstance().newXPath();
-					
-					NodeList nodeList = (NodeList) xpath.evaluate("//*[namespace-uri()]/@targetNamespace", getDocumentWSDL(), XPathConstants.NODESET);
-					
+
+					NodeList nodeList = (NodeList) xpath.evaluate("//*[namespace-uri()]/@targetNamespace",
+							getDocumentWSDL(), XPathConstants.NODESET);
+
 					for (int i = 0; i < nodeList.getLength(); i++) {
-				        Node currentNode = nodeList.item(i);
-				        if (i == 0) {
-				        	namespace = currentNode.getNodeValue();
-				        	continue;
+						Node currentNode = nodeList.item(i);
+						if (i == 0) {
+							namespace = currentNode.getNodeValue();
+							continue;
 						}
-				        
-				        //TODO registrar log de manera mas conveniente
-				        System.out.println(currentNode);
-				        System.out.println(currentNode.getNodeValue());
-				        getSetOthersNamespaces().add(currentNode.getNodeValue());
-				        
-				        
-				    }
+
+						// TODO registrar log de manera mas conveniente
+						System.out.println(currentNode);
+						System.out.println(currentNode.getNodeValue());
+						getSetOthersNamespaces().add(currentNode.getNodeValue());
+					}
 
 					String soapNameSpace = xpath.evaluate("/*/namespace::*[name()='soap']", getDocumentWSDL());
 					System.out.println(soapNameSpace);
+
+					NamespaceContext context = new NamespaceContextMap("wsdl", "http://schemas.xmlsoap.org/wsdl/");
+
+					xpath.setNamespaceContext(context);
+
+					nodeList = (NodeList) xpath.evaluate("//wsdl:operation", getDocumentWSDL(), XPathConstants.NODESET);
+
+					boolean isSet = false;
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						Node currentNode = nodeList.item(i);
+						
+						System.out.println("OPERATIONS->" + currentNode);
+						System.out.println("OPERATIONS->" + currentNode.toString());
+						System.out.println("OPERATIONS->" + currentNode.getNodeValue());
+						
+						if (currentNode.getNodeValue() != null) {
+							if (!isSet) {
+								oprname = currentNode.getNodeValue();
+								oprnameText.setText(oprname);
+								isSet = true;
+							}
+							setOperations.add(currentNode.getNodeValue());
+						} else {
+							if (currentNode.getAttributes() != null) {
+								NamedNodeMap attributes = currentNode.getAttributes();
+								for (int j = 0; j < attributes.getLength(); j++) {
+									Node item = attributes.item(j);
+									System.out.println("OPERATIONS->attr->" + item.getNodeValue());
+									if (!isSet) {
+										oprname = item.getNodeValue(); 
+										oprnameText.setText(oprname);
+										isSet = true;
+									}
+									setOperations.add(item.getNodeValue());
+								}
+								
+							}
+						}
+						
+					}
+					
+					String arrayOperations[];
+					if (setOperations != null && !setOperations.isEmpty()) {
+						arrayOperations = new String[setOperations.size()];
+						Iterator<String> iterator = setOperations.iterator();
+						int i = 0;
+						while (iterator.hasNext()) {
+							String next = iterator.next();
+							arrayOperations[i] = next;
+							i++;
+						}
+					} else {
+						arrayOperations = new String[1];
+						arrayOperations[0] = "";
+					}
+					comboOperations.setItems(arrayOperations);
+					if (oprname != null) {
+						comboOperations.setText(oprname);
+					}
 					
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -184,14 +246,47 @@ public class FacadePageOne extends WizardPage {
 		textWSDLLocation = new Text(group, SWT.SINGLE | SWT.BORDER);
 		textWSDLLocation.setEditable(false);
 		textWSDLLocation.setLayoutData(gd);
+		
+		Label labelOperation = new Label(container, SWT.NONE);
+		labelOperation.setText(FacadeConstants.OP_NAME_LABEL);
+		
+		Group groupOperation = new Group(container, SWT.NONE);
+		groupOperation.setLayout(new GridLayout(3, false));
+		
+		setComboOperations(new Combo(groupOperation, SWT.READ_ONLY));
+		getComboOperations().setBounds(50, 50, 150, 65);
 
+		setCheckCustomOperation(new Button(groupOperation, SWT.CHECK));
+		getCheckCustomOperation().setText("Custom Operation");
+		getCheckCustomOperation().addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+
+				
+
+			}
+		});
+		
+		oprnameText = new Text(groupOperation, SWT.BORDER | SWT.SINGLE);
+		oprnameText.setEnabled(false);
+		oprnameText.setText(oprname);
+		oprnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		Label label5 = new Label(container, SWT.NONE);
+		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
+		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		srvnameText.setText(srvname);
+		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(FacadeConstants.DOMAIN_LABEL);
 
 		comboDomains = new Combo(container, SWT.READ_ONLY);
 		comboDomains.setBounds(50, 50, 150, 65);
 
-		List<BValDomainBo> listdomains = null;
+		
 
 		String arraydomains[] = { "accounts", "customers", "payments" };
 
@@ -210,12 +305,10 @@ public class FacadePageOne extends WizardPage {
 		});
 
 		Label labelChannelDom = new Label(container, SWT.NONE);
-		labelChannelDom.setText(FacadeConstants.DOMAIN_IFW_LABEL);
+		labelChannelDom.setText(FacadeConstants.CHANNEL_LABEL);
 
 		comboChannels = new Combo(container, SWT.READ_ONLY);
 		comboChannels.setBounds(50, 50, 150, 65);
-
-		List<BValDomainBo> listIfxDomains = null;
 
 		String arrayIfxDomains[] = { "PB", "BM", "BABN" };
 
@@ -230,32 +323,16 @@ public class FacadePageOne extends WizardPage {
 			}
 		});
 
-		Label label5 = new Label(container, SWT.NONE);
-		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
-		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		srvnameText.setText(srvname);
-		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		Label labelOperation = new Label(container, SWT.NONE);
-		labelOperation.setText(FacadeConstants.OP_NAME_LABEL);
-
-		oprnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		oprnameText.setText(oprname);
-		oprnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-		// Label label1 = new Label(container, SWT.NONE);
-		// label1.setText(FacadeConstants.NAMESPACE_LABEL);
-		// namespaceText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		// namespaceText.setText(namespace);
-		// namespaceText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Label label7 = new Label(container, SWT.NONE);
-		label7.setText(FacadeConstants.MSG_REQ_LABEL);
+		label7.setText(FacadeConstants.MSG_BANK_LABEL);
+		
+		
 		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		orgText.setText(getOrgname());
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		Label label8 = new Label(container, SWT.NONE);
-		label8.setText(FacadeConstants.MSG_RES_LABEL);
+		label8.setText(FacadeConstants.MSG_BANKID_LABEL);
 		bankidText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		bankidText.setText(getBankid());
 		bankidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -275,6 +352,7 @@ public class FacadePageOne extends WizardPage {
 		// idreqText.addModifyListener(listener);
 		srvnameText.addModifyListener(listener);
 		oprnameText.addModifyListener(listener);
+		comboDomains.addModifyListener(listener);
 		// orgText.addModifyListener(listener);
 		// bankidText.addModifyListener(listener);
 		//
@@ -288,6 +366,18 @@ public class FacadePageOne extends WizardPage {
 	private class MyModifyListener implements ModifyListener {
 		public void modifyText(ModifyEvent e) {
 			setPageComplete(false);
+			
+			oprname = oprnameText.getText().trim();
+			if (StringUtils.isBlank(oprname)) {
+				setErrorMessage("ERROR: Operation Name Null");
+				return;
+			}
+			
+			srvname = srvnameText.getText().trim();
+			if (StringUtils.isBlank(srvname)) {
+				setErrorMessage("ERROR: Service Name Null");
+				return;
+			}
 
 			domain = comboDomains.getText();
 			if (StringUtils.isBlank(domain)) {
@@ -297,21 +387,10 @@ public class FacadePageOne extends WizardPage {
 
 			setChannel(comboChannels.getText());
 			if (StringUtils.isBlank(getChannel())) {
-				setErrorMessage("ERROR: Channel Domain Null");
+				setErrorMessage("ERROR: Channel Null");
 				return;
 			}
 
-			srvname = srvnameText.getText().trim();
-			if (StringUtils.isBlank(srvname)) {
-				setErrorMessage("ERROR: Service Name Null");
-				return;
-			}
-
-			oprname = oprnameText.getText().trim();
-			if (StringUtils.isBlank(oprname)) {
-				setErrorMessage("ERROR: Operation Name Null");
-				return;
-			}
 
 			projectname = srvname + "SvcFcdWs";
 
@@ -339,7 +418,6 @@ public class FacadePageOne extends WizardPage {
 		}
 	}
 
-
 	public String getNamespace() {
 		return namespace;
 	}
@@ -347,8 +425,6 @@ public class FacadePageOne extends WizardPage {
 	public void setNamespace(String namespace) {
 		this.namespace = namespace;
 	}
-
-	
 
 	public String getDomain() {
 		return domain;
@@ -470,6 +546,30 @@ public class FacadePageOne extends WizardPage {
 
 	public void setSetOthersNamespaces(LinkedHashSet<String> setOthersNamespaces) {
 		this.setOthersNamespaces = setOthersNamespaces;
+	}
+
+	public LinkedHashSet<String> getSetOperations() {
+		return setOperations;
+	}
+
+	public void setSetOperations(LinkedHashSet<String> setOperations) {
+		this.setOperations = setOperations;
+	}
+
+	public Button getCheckCustomOperation() {
+		return checkCustomOperation;
+	}
+
+	public void setCheckCustomOperation(Button checkCustomOperation) {
+		this.checkCustomOperation = checkCustomOperation;
+	}
+
+	public Combo getComboOperations() {
+		return comboOperations;
+	}
+
+	public void setComboOperations(Combo comboOperations) {
+		this.comboOperations = comboOperations;
 	}
 
 }
