@@ -13,12 +13,21 @@
             categoryId="com.ath.wmb.genflows.commands.category"
             id="com.ath.wmb.genflows.commands.sampleCommand">
       </command>
+      <command
+            categoryId="com.ath.wmb.genflows.commands.category"
+            id="com.ath.wmb.genflows.commands.particularCommand"
+            name="%command.name.1">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             commandId="com.ath.wmb.genflows.commands.sampleCommand"
             class="com.ath.wmb.genflows.handlers.TemplateHandler">
+      </handler>
+      <handler
+            class="com.ath.wmb.genflows.handlers.TemplateHandlerParticular"
+            commandId="com.ath.wmb.genflows.commands.particularCommand">
       </handler>
    </extension>
    <extension
@@ -42,6 +51,11 @@
                   commandId="com.ath.wmb.genflows.commands.sampleCommand"
                   mnemonic="%command.mnemonic"
                   id="com.ath.wmb.genflows.menus.sampleCommand">
+            </command>
+            <command
+                  commandId="com.ath.wmb.genflows.commands.particularCommand"
+                  id="com.ath.wmb.genflows.menus.particularCommand"
+                  style="push">
             </command>
          </menu>
       </menuContribution>

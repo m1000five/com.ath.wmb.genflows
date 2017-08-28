@@ -121,60 +121,12 @@ public class FacadeWizard extends Wizard implements INewWizard {
 
 		try {
 
-			
-
-//			if (one.getCheckAutoIdCntl().getSelection()) {
-////				List<BCntlBo> listcntls = databaseDao.findAllCtnlByCriteria(700000, 999891);
-////				Iterator<BCntlBo> it = listcntls.iterator();
-////				boolean comienzo = false;
-////				int idx = 0;
-////				while (it.hasNext()) {
-////					BCntlBo cntlBo = (BCntlBo) it.next();
-////					if (!comienzo) {
-////						idx = cntlBo.getFacade_id();
-////						comienzo = true;
-////						idx++;
-////						continue;
-////					}
-////					if (idx != cntlBo.getFacade_id().intValue()) {
-////						break;
-////					}
-////					idx++;
-//				}
-//				facadeProject.setSrvId(idx);
-//			} else {
-//				facadeProject.setSrvId(Integer.parseInt(one.getCtrlid()));
-//			}
 
 			facadeProject.setCurrentDir(three.getTextProjectLocation().getText());
 			System.out.println(three.getTextProjectLocation().getText());
 
 			facadeProject.setNamespace(one.getNamespace());  
 
-						
-//			Iterator<BStepOrchestable> iterator = two.getListStepsOrchestables().iterator();
-//			
-//			while (iterator.hasNext()) {
-//				BStepOrchestable bStepOrchestable = (BStepOrchestable) iterator.next();
-//				
-//					if (bStepOrchestable.getType().equalsIgnoreCase("FMG")) {
-//						
-//						BFmgBo bFmgBo = databaseDao.findFmgById(bStepOrchestable.getId());
-//						if (bFmgBo != null) {
-//							facadeProject.addStep(bFmgBo);
-//						}
-//
-//					} else if (bStepOrchestable.getType().equalsIgnoreCase("CNTL")) {
-//						
-//						BCntlBo cntlBo = databaseDao.findCtnlById(bStepOrchestable.getId());
-//						if (cntlBo != null) {
-//							facadeProject.addStep(cntlBo);
-//						}
-//					} else {
-//						BStepOrchestable defaultstep = new BFmgBo(0, "FMG.DEST.00000", "ESB_DEST_NomServicio_NomOperacion_FMG");
-//						facadeProject.addStep(defaultstep);
-//					}
-//			}
 
 			facadeProject.setDomain(one.getDomain());
 			facadeProject.setSrvName(one.getSrvname());
@@ -266,37 +218,6 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			return false;
 		}
 
-//		try {
-//
-//			if (three.getCheckUpdateDb().getSelection()) {
-//				databaseDao.insert(facadeProject);
-//
-//				Iterator<BStepOrchestable> itSteps = facadeProject.getListSteps().iterator();
-//
-//				while (itSteps.hasNext()) {
-//					BStepOrchestable bStepOrchestable = itSteps.next();
-//
-//					if (bStepOrchestable.getId() > 0) {
-//						if (bStepOrchestable.getInputMq().toUpperCase().startsWith("FMG")) {
-//							databaseDao.insertOrchestable(facadeProject, bStepOrchestable);
-//						}
-//					}
-//
-//				}
-//
-//			}
-//
-//			
-//
-//		} catch (IOException ioe) {
-//			ioe.printStackTrace();
-//			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", ioe.getMessage(), ioe));
-//		} catch (Exception e) {
-//			if (step3PreCreateQueues) {
-//				
-//			}
-//			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
-//		}
 
 		try {
 

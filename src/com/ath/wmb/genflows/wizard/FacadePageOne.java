@@ -4,13 +4,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -34,14 +27,11 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.ath.esqltool.domain.BAthFacadeProject;
 import com.ath.wmb.genflows.Activator;
+import com.ath.wmb.genflows.general.AnalyzerWsdl;
 import com.ath.wmb.genflows.general.FacadeConstants;
-import com.ath.wmb.genflows.general.NamespaceContextMap;
 
 public class FacadePageOne extends WizardPage {
 
@@ -138,8 +128,6 @@ public class FacadePageOne extends WizardPage {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				// TODO revisar si se puede separar esta logica de carga y analisis del WSDL
-				// para que no este en este Listener del control
 				FileDialog dlg = new FileDialog(mButtonWsdl.getShell(), SWT.OPEN);
 				dlg.setText("Open");
 				String path = dlg.open();
@@ -156,73 +144,21 @@ public class FacadePageOne extends WizardPage {
 						srvname = getNameOfWSDL().substring(0, getNameOfWSDL().indexOf("."));
 						srvnameText.setText(srvname);
 					}
-
-					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(true); // This is really important, without it that XPath does not work
-					DocumentBuilder db = dbf.newDocumentBuilder();
-					setDocumentWSDL(db.parse(inputSource)); // inputSource, inputStream or file which contains your XML.
-
-					XPath xpath = XPathFactory.newInstance().newXPath();
-
-					NodeList nodeList = (NodeList) xpath.evaluate("//*[namespace-uri()]/@targetNamespace",
-							getDocumentWSDL(), XPathConstants.NODESET);
-
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node currentNode = nodeList.item(i);
-						if (i == 0) {
-							namespace = currentNode.getNodeValue();
-							continue;
-						}
-
-						// TODO registrar log de manera mas conveniente
-						System.out.println(currentNode);
-						System.out.println(currentNode.getNodeValue());
-						getSetOthersNamespaces().add(currentNode.getNodeValue());
-					}
-
-					String soapNameSpace = xpath.evaluate("/*/namespace::*[name()='soap']", getDocumentWSDL());
-					System.out.println(soapNameSpace);
-
-					NamespaceContext context = new NamespaceContextMap("wsdl", "http://schemas.xmlsoap.org/wsdl/");
-
-					xpath.setNamespaceContext(context);
-
-					//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
-					nodeList = (NodeList) xpath.evaluate("//wsdl:operation/@name", getDocumentWSDL(), XPathConstants.NODESET);
-
-					boolean isSet = false;
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node currentNode = nodeList.item(i);
-						
-						System.out.println("OPERATIONS->" + currentNode);
-						System.out.println("OPERATIONS->" + currentNode.toString());
-						System.out.println("OPERATIONS->" + currentNode.getNodeValue());
-						
-						if (currentNode.getNodeValue() != null) {
-							if (!isSet) {
-								oprname = currentNode.getNodeValue();
-								oprnameText.setText(oprname);
-								isSet = true;
-							}
-							setOperations.add(currentNode.getNodeValue());
-						} else {
-							if (currentNode.getAttributes() != null) {
-								NamedNodeMap attributes = currentNode.getAttributes();
-								for (int j = 0; j < attributes.getLength(); j++) {
-									Node item = attributes.item(j);
-									System.out.println("OPERATIONS->attr->" + item.getNodeValue());
-									if (!isSet) {
-										oprname = item.getNodeValue(); 
-										oprnameText.setText(oprname);
-										isSet = true;
-									}
-									setOperations.add(item.getNodeValue());
-								}
-								
-							}
-						}
-						
-					}
+					
+					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
+					
+					analyzerWsdl.parse(inputSource);
+					
+					setDocumentWSDL(analyzerWsdl.getDocument());
+					
+					namespace = analyzerWsdl.getNamespace();
+					setOthersNamespaces = analyzerWsdl.getNamespaces();
+					
+					oprname = analyzerWsdl.getOprname();
+					oprnameText.setText(oprname);
+					
+					setOperations = analyzerWsdl.getSetOperations();
+					
 					
 					String arrayOperations[];
 					if (setOperations != null && !setOperations.isEmpty()) {
@@ -242,68 +178,9 @@ public class FacadePageOne extends WizardPage {
 					if (oprname != null) {
 						comboOperations.setText(oprname);
 					}
-					
-					//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
-					nodeList = (NodeList) xpath.evaluate("//wsdl:binding/@name", getDocumentWSDL(), XPathConstants.NODESET);
-					
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node currentNode = nodeList.item(i);
-						if (currentNode.getNodeValue() != null) {
-							setWsdlBinding(currentNode.getNodeValue());
-						} else {
-							if (currentNode.getAttributes() != null) {
-								NamedNodeMap attributes = currentNode.getAttributes();
-								for (int j = 0; j < attributes.getLength(); j++) {
-									Node item = attributes.item(j);
-									setWsdlBinding(item.getNodeValue());
-									break;
-								}
-							}
-						}
-						break;
-					}
-					
-					
-					//<wsdl:portType name="CardPswdAssignmentSvc"> 
-					nodeList = (NodeList) xpath.evaluate("//wsdl:portType/@name", getDocumentWSDL(), XPathConstants.NODESET);
-					
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node currentNode = nodeList.item(i);
-						if (currentNode.getNodeValue() != null) {
-							setWsdlPort(currentNode.getNodeValue());
-						} else {
-							if (currentNode.getAttributes() != null) {
-								NamedNodeMap attributes = currentNode.getAttributes();
-								for (int j = 0; j < attributes.getLength(); j++) {
-									Node item = attributes.item(j);
-									setWsdlPort(item.getNodeValue());
-									break;
-								}
-							}
-						}
-						break;
-					}
-					
-					nodeList = (NodeList) xpath.evaluate("//wsdl:service/wsdl:port/@name", getDocumentWSDL(), XPathConstants.NODESET);
-					
-					for (int i = 0; i < nodeList.getLength(); i++) {
-						Node currentNode = nodeList.item(i);
-						if (currentNode.getNodeValue() != null) {
-							setWsdlSvcPort(currentNode.getNodeValue());
-						} else {
-							if (currentNode.getAttributes() != null) {
-								NamedNodeMap attributes = currentNode.getAttributes();
-								for (int j = 0; j < attributes.getLength(); j++) {
-									Node item = attributes.item(j);
-									setWsdlSvcPort(item.getNodeValue());
-									break;
-								}
-							}
-						}
-						break;
-					}
-					
-					
+					setWsdlBinding(analyzerWsdl.getWsdlBinding());
+					setWsdlPort(analyzerWsdl.getWsdlPort());
+					setWsdlSvcPort(analyzerWsdl.getWsdlSvcPort());
 				} catch (Exception e2) {
 					e2.printStackTrace();
 				}
