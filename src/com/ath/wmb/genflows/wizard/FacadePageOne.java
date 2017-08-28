@@ -146,19 +146,14 @@ public class FacadePageOne extends WizardPage {
 					}
 					
 					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
-					
 					analyzerWsdl.parse(inputSource);
-					
 					setDocumentWSDL(analyzerWsdl.getDocument());
 					
 					namespace = analyzerWsdl.getNamespace();
 					setOthersNamespaces = analyzerWsdl.getNamespaces();
-					
 					oprname = analyzerWsdl.getOprname();
 					oprnameText.setText(oprname);
-					
 					setOperations = analyzerWsdl.getSetOperations();
-					
 					
 					String arrayOperations[];
 					if (setOperations != null && !setOperations.isEmpty()) {
@@ -231,8 +226,6 @@ public class FacadePageOne extends WizardPage {
 		comboDomains = new Combo(container, SWT.READ_ONLY);
 		comboDomains.setBounds(50, 50, 150, 65);
 
-		
-
 		String arraydomains[] = { "accounts", "customers", "payments" };
 
 		comboDomains.setItems(arraydomains);
@@ -241,11 +234,6 @@ public class FacadePageOne extends WizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 				domain = comboDomains.getText();
-				// if (!StringUtils.isBlank(domain)) {
-				// namespace = "urn://grupoaval.com/" + domain.toLowerCase() + "/v1/";
-				// namespaceText.setText(namespace);
-				// }
-
 			}
 		});
 
@@ -299,8 +287,8 @@ public class FacadePageOne extends WizardPage {
 		oprnameText.addModifyListener(listener);
 		comboDomains.addModifyListener(listener);
 		comboChannels.addModifyListener(listener);
-		// orgText.addModifyListener(listener);
-		// bankidText.addModifyListener(listener);
+		orgText.addModifyListener(listener);
+		bankidText.addModifyListener(listener);
 		//
 
 		// required to avoid an error in the system
@@ -347,7 +335,7 @@ public class FacadePageOne extends WizardPage {
 			
 			
 			facadeProject.setDomain(getDomain());
-			facadeProject.setSrvName(getSrvname());
+			facadeProject.setSrvName(getSrvname()); 
 			facadeProject.setOprName(getOprname());
 			
 			//

@@ -41,7 +41,7 @@ public class FacadePageTwo extends WizardPage {
 	private Button[] radiosParticular;
 	private Group groupparticular;
 	private Combo combobanks;
-	private Combo combocntls;
+	
 	
 	private Group group;
 	private Text codserviceText;

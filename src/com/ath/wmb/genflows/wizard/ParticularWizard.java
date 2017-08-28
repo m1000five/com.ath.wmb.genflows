@@ -37,7 +37,7 @@ public class ParticularWizard extends Wizard implements INewWizard {
 
 	@Override
 	public String getWindowTitle() {
-		return "Generate New Particular";
+		return "Generate New Specific";
 	}
 
 	@Override

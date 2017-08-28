@@ -2,8 +2,8 @@ package com.ath.wmb.genflows.general;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.StringTokenizer;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -17,28 +17,33 @@ import javax.xml.xpath.XPathFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class AnalyzerFlow {
 
 	private LinkedHashSet<String> setNamespaces = new LinkedHashSet<String>();
-	private LinkedHashSet<String> setOperations = new LinkedHashSet<String>();
-	
+	private LinkedHashSet<String> setAttrSoapNode = new LinkedHashSet<String>();
+
 	private String namespace;
 	private String oprname;
-	private String wsdlBinding;
-	private String wsdlPort;
 	private String wsdlSvcPort;
 	private Document document;
 	private DocumentBuilderFactory dbf;
 	private XPath xpath;
+	private boolean facadeNode;
+	private String wsdlRelativePath;
+	private String wsdlBinding;
+	private String wsdlPort;
+	private String portType;
+	private String context;
+	private String appSrvName;
+	private String strDomain;
 
 	public AnalyzerFlow() {
 		super();
 		dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true); // This is really important, without it that XPath does not work
-		
+
 		xpath = XPathFactory.newInstance().newXPath();
 	}
 
@@ -51,174 +56,97 @@ public class AnalyzerFlow {
 		DocumentBuilder db = dbf.newDocumentBuilder();
 		setDocument(db.parse(inputSource)); // inputSource, inputStream or file which contains your XML.
 	}
-	
-	
+
 	public void parseFacadeFlow() throws XPathExpressionException {
-		
-		NamespaceContext ecore = new NamespaceContextMap("ecore", "http://www.eclipse.org/emf/2002/Ecore", "xmi", "http://www.omg.org/XMI");
-		
+
+		NamespaceContext ecore = new NamespaceContextMap("ecore", "http://www.eclipse.org/emf/2002/Ecore", "xmi",
+				"http://www.omg.org/XMI");
 
 		xpath.setNamespaceContext(ecore);
-		
-		///ecore:EPackage/@xmlns:ComIbmSOAPInput.msgnode
-		//xmlns:ComIbmSOAPInput.msgnode="ComIbmSOAPInput.msgnode" 
-		
-		
-		NodeList nodeList = (NodeList) xpath.evaluate("//ecore:EPackage/eClassifiers/composition/nodes", getDocument(), XPathConstants.NODESET);
 
+		/// ecore:EPackage/@xmlns:ComIbmSOAPInput.msgnode
+		// xmlns:ComIbmSOAPInput.msgnode="ComIbmSOAPInput.msgnode"
+		//// ecore:EPackage/eClassifiers/composition/nodes
 
-		boolean isSet = false;   
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node currentNode = nodeList.item(i);
-			
-			System.out.println("NODE->" + currentNode);
-			System.out.println("NODE->" + currentNode.toString());
-			System.out.println("NODE->" + currentNode.getNodeValue());
-			
-			if (currentNode.getNodeValue() != null) {
-				if (!isSet) {
-					setOprname(currentNode.getNodeValue());
-					isSet = true;
-				}
-				getSetOperations().add(currentNode.getNodeValue());
-			} else {
-				if (currentNode.getAttributes() != null) {
-					NamedNodeMap attributes = currentNode.getAttributes();
-					for (int j = 0; j < attributes.getLength(); j++) {
-						Node item = attributes.item(j);
-						
-						System.out.println("NODE->attr->" + item.getNodeName()+ " " + item.getNodeValue());
-						
-						if (!isSet) {
-							setOprname(item.getNodeValue()); 
-							isSet = true;
-						}
-						getSetOperations().add(item.getNodeValue());
+		Node currentSoapNode = (Node) xpath.evaluate(
+				"//ecore:EPackage/eClassifiers/composition/nodes[@xmi:type='ComIbmSOAPInput.msgnode:FCMComposite_1']",
+				getDocument(), XPathConstants.NODE);
+
+		if (currentSoapNode != null && currentSoapNode.getAttributes() != null) {
+			setFacadeNode(true);
+			NamedNodeMap attributes = currentSoapNode.getAttributes();
+			for (int j = 0; j < attributes.getLength(); j++) {
+				Node attr = attributes.item(j);
+
+				System.out.println("NODE->attr->" + attr.getNodeName() + " " + attr.getNodeValue());
+				
+//				NODE->attr->location 112,148
+//				NODE->attr->selectedBinding CardPswdAssignmentSvcBinding
+//				NODE->attr->selectedPort CardPswdAssignmentSvcPort
+//				NODE->attr->selectedPortType CardPswdAssignmentSvc
+//				NODE->attr->targetNamespace urn://grupoaval.com/customers/v1/
+//				NODE->attr->urlSelector /Customers/Services/CardPswdAssignmentSvc
+//				NODE->attr->useHTTPTransport true
+//				NODE->attr->wsdlFileName CardPswdAssignmentSvc.wsdl
+//				NODE->attr->xmi:id FCMComposite_1_3
+//				NODE->attr->xmi:type ComIbmSOAPInput.msgnode:FCMComposite_1
+				
+				if (attr.getNodeName().equals("targetNamespace")) {
+					namespace = attr.getNodeValue();
+				} else if (attr.getNodeName().equals("wsdlFileName")) {
+					setWsdlFileName(attr.getNodeValue());
+				} else if (attr.getNodeName().equals("selectedBinding")) {
+					wsdlBinding = attr.getNodeValue();
+				} else if (attr.getNodeName().equals("selectedPort")) {
+					wsdlPort = attr.getNodeValue();
+				} else if (attr.getNodeName().equals("selectedPortType")) {
+					setPortType(attr.getNodeValue());
+				} else if (attr.getNodeName().equals("urlSelector")) {
+					setContext(attr.getNodeValue());
+					
+					if (getContext() != null && getContext().length() > 0) {
+						StringTokenizer tokenizer = new StringTokenizer(getContext(), "/");
+						setStrDomain(((String) tokenizer.nextElement()).toLowerCase());
 					}
 					
-				}
+				}  
+
+				getSetAttrSoapNode().add(attr.getNodeValue());
 			}
+
+		} else {
+			setFacadeNode(false);
 			
-		}
-		
-		if (true) {
 			return;
 		}
+		
+		
+//		<eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.UDP_Application" name="UDP_Application" 
+//		defaultValueLiteral="CardPswdAssignmentSvc">
+		
+		Node udpAppNode = (Node) xpath.evaluate(
+				"//ecore:EPackage/eClassifiers/eStructuralFeatures[@name='UDP_Application']",
+				getDocument(), XPathConstants.NODE);
 
-		String soapNameSpace = xpath.evaluate("/*/namespace::*[name()='soap']", getDocument());
-		System.out.println(soapNameSpace);
+		if (udpAppNode != null && udpAppNode.getAttributes() != null) {
+			setFacadeNode(true);
+			NamedNodeMap attributes = udpAppNode.getAttributes();
+			for (int j = 0; j < attributes.getLength(); j++) {
+				Node attr = attributes.item(j);
 
-		//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
-		nodeList = (NodeList) xpath.evaluate("//wsdl:operation/@name", getDocument(), XPathConstants.NODESET);
+				System.out.println("NODE->attr->" + attr.getNodeName() + " " + attr.getNodeValue());
 
-		
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node currentNode = nodeList.item(i);
-			
-			System.out.println("OPERATIONS->" + currentNode);
-			System.out.println("OPERATIONS->" + currentNode.toString());
-			System.out.println("OPERATIONS->" + currentNode.getNodeValue());
-			
-			if (currentNode.getNodeValue() != null) {
-				if (!isSet) {
-					setOprname(currentNode.getNodeValue());
-					isSet = true;
-				}
-				getSetOperations().add(currentNode.getNodeValue());
-			} else {
-				if (currentNode.getAttributes() != null) {
-					NamedNodeMap attributes = currentNode.getAttributes();
-					for (int j = 0; j < attributes.getLength(); j++) {
-						Node item = attributes.item(j);
-						System.out.println("OPERATIONS->attr->" + item.getNodeValue());
-						if (!isSet) {
-							setOprname(item.getNodeValue()); 
-							isSet = true;
-						}
-						getSetOperations().add(item.getNodeValue());
-					}
-					
-				}
+				
+				if (attr.getNodeName().equals("defaultValueLiteral")) {
+					setAppSrvName(attr.getNodeValue());
+				}  
+
+				
 			}
-			
+
 		}
-		
-		String arrayOperations[];
-		if (getSetOperations() != null && !getSetOperations().isEmpty()) {
-			arrayOperations = new String[getSetOperations().size()];
-			Iterator<String> iterator = getSetOperations().iterator();
-			int i = 0;
-			while (iterator.hasNext()) {
-				String next = iterator.next();
-				arrayOperations[i] = next;
-				i++;
-			}
-		} else {
-			arrayOperations = new String[1];
-			arrayOperations[0] = "";
-		}
-		
-		
-		//<wsdl:binding name="CardPswdAssignmentSvcBinding" type="tns:CardPswdAssignmentSvc">
-		nodeList = (NodeList) xpath.evaluate("//wsdl:binding/@name", getDocument(), XPathConstants.NODESET);
-		
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node currentNode = nodeList.item(i);
-			if (currentNode.getNodeValue() != null) {
-				setWsdlBinding((currentNode.getNodeValue()));
-			} else {
-				if (currentNode.getAttributes() != null) {
-					NamedNodeMap attributes = currentNode.getAttributes();
-					for (int j = 0; j < attributes.getLength(); j++) {
-						Node item = attributes.item(j);
-						setWsdlBinding((item.getNodeValue()));
-						break;
-					}
-				}
-			}
-			break;
-		}
-		
-		
-		//<wsdl:portType name="CardPswdAssignmentSvc"> 
-		nodeList = (NodeList) xpath.evaluate("//wsdl:portType/@name", getDocument(), XPathConstants.NODESET);
-		
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node currentNode = nodeList.item(i);
-			if (currentNode.getNodeValue() != null) {
-				setWsdlPort((currentNode.getNodeValue()));
-			} else {
-				if (currentNode.getAttributes() != null) {
-					NamedNodeMap attributes = currentNode.getAttributes();
-					for (int j = 0; j < attributes.getLength(); j++) {
-						Node item = attributes.item(j);
-						setWsdlPort((item.getNodeValue()));
-						break;
-					}
-				}
-			}
-			break;
-		}
-		
-		nodeList = (NodeList) xpath.evaluate("//wsdl:service/wsdl:port/@name", getDocument(), XPathConstants.NODESET);
-		
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Node currentNode = nodeList.item(i);
-			if (currentNode.getNodeValue() != null) {
-				setWsdlSvcPort((currentNode.getNodeValue()));
-			} else {
-				if (currentNode.getAttributes() != null) {
-					NamedNodeMap attributes = currentNode.getAttributes();
-					for (int j = 0; j < attributes.getLength(); j++) {
-						Node item = attributes.item(j);
-						setWsdlSvcPort((item.getNodeValue()));
-						break;
-					}
-				}
-			}
-			break;
-		}
-		
+
+
 	}
 
 	public LinkedHashSet<String> getSetNamespaces() {
@@ -229,13 +157,7 @@ public class AnalyzerFlow {
 		this.setNamespaces = setNamespaces;
 	}
 
-	public LinkedHashSet<String> getSetOperations() {
-		return setOperations;
-	}
 
-	public void setSetOperations(LinkedHashSet<String> setOperations) {
-		this.setOperations = setOperations;
-	}
 
 	public String getNamespace() {
 		return namespace;
@@ -283,6 +205,78 @@ public class AnalyzerFlow {
 
 	public void setDocument(Document document) {
 		this.document = document;
+	}
+
+	public boolean isFacadeNode() {
+		return facadeNode;
+	}
+
+	public void setFacadeNode(boolean facadeNode) {
+		this.facadeNode = facadeNode;
+	}
+
+	public LinkedHashSet<String> getSetAttrSopNode() {
+		return getSetAttrSoapNode();
+	}
+
+	public void setSetAttrSopNode(LinkedHashSet<String> setAttrSopNode) {
+		this.setSetAttrSoapNode(setAttrSopNode);
+	}
+
+	public LinkedHashSet<String> getSetAttrSoapNode() {
+		return setAttrSoapNode;
+	}
+
+	public void setSetAttrSoapNode(LinkedHashSet<String> setAttrSoapNode) {
+		this.setAttrSoapNode = setAttrSoapNode;
+	}
+
+	public String getWsdlFileName() {
+		return getWsdlRelativePath();
+	}
+
+	public void setWsdlFileName(String wsdlFileName) {
+		this.setWsdlRelativePath(wsdlFileName);
+	}
+
+	public String getPortType() {
+		return portType;
+	}
+
+	public void setPortType(String portType) {
+		this.portType = portType;
+	}
+
+	public String getContext() {
+		return context;
+	}
+
+	public void setContext(String context) {
+		this.context = context;
+	}
+
+	public String getWsdlRelativePath() {
+		return wsdlRelativePath;
+	}
+
+	public void setWsdlRelativePath(String wsdlRelativePath) {
+		this.wsdlRelativePath = wsdlRelativePath;
+	}
+
+	public String getAppSrvName() {
+		return appSrvName;
+	}
+
+	public void setAppSrvName(String appSrvName) {
+		this.appSrvName = appSrvName;
+	}
+
+	public String getStrDomain() {
+		return strDomain;
+	}
+
+	public void setStrDomain(String strDomain) {
+		this.strDomain = strDomain;
 	}
 
 }
