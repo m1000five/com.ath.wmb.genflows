@@ -1,9 +1,5 @@
 package com.ath.wmb.genflows.wizard;
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.List;
-
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -20,7 +16,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import com.ath.esqltool.domain.BAthFacadeProject;
 import com.ath.esqltool.domain.BAthParticularProject;
 
 
@@ -103,108 +98,7 @@ public class ParticularPageTwo extends WizardPage {
 			}
 		});
 
-//		Group groupTemplates = new Group(container, SWT.NONE);
-//		groupTemplates.setLayout(new GridLayout(3, false));
-//		groupTemplates.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//		checkDefaultTemplates = new Button(groupTemplates, SWT.CHECK);
-//		checkDefaultTemplates.setText("Select custom templates?");
-//
-//		checkDefaultTemplates.addSelectionListener(new SelectionAdapter() {
-//
-//			@Override
-//			public void widgetSelected(SelectionEvent event) {
-//
-//				Button btn = (Button) event.getSource();
-//				System.out.println(btn.getSelection());
-//
-//				if (btn.getSelection()) {
-//					setPageComplete(false);
-//					mButtonTemplates.setEnabled(true);
-//				} else {
-//					setPageComplete(true);
-//					mButtonTemplates.setEnabled(false);
-//				}
-//
-//			}
-//		});
-//
-//		mButtonTemplates = new Button(groupTemplates, SWT.NONE);
-//		mButtonTemplates.setEnabled(false);
-//		mButtonTemplates.setText("...");
-//		mButtonTemplates.addSelectionListener(new SelectionListener() {
-//
-//			public void widgetDefaultSelected(SelectionEvent e) {
-//			}
-//
-//			public void widgetSelected(SelectionEvent e) {
-//				DirectoryDialog dlg = new DirectoryDialog(mButtonTemplates.getShell(), SWT.OPEN);
-//				dlg.setText("Open");
-//				String path = dlg.open();
-//				if (path == null || path.length() == 0) {
-//					setPageComplete(false);
-//					return;
-//				}
-//
-//				try {
-//					File folder = new File(path);
-//					File[] listOfFiles = folder.listFiles();
-//					
-//					List<String> listTemplates = BAthTemplates.map;
-//					Iterator<String> itTemplates = listTemplates.iterator();
-//					
-//					String aFileNotFound = null;
-//					while (itTemplates.hasNext()) {
-//						String template = (String) itTemplates.next();
-//						
-//						boolean located = false;
-//						
-//						for (int i = 0; i < listOfFiles.length; i++) {
-//							if (listOfFiles[i].isFile()) {
-//								System.out.println("File " + listOfFiles[i].getName());
-//								if (template.equalsIgnoreCase(listOfFiles[i].getName())) {
-//									located = true;
-//									break;
-//								}
-//							}
-//						}
-//						if (!located) {
-//							aFileNotFound = template;
-//							break;
-//						}
-//					}
-//					
-//					textTemplateLocation.setText(path);
-//					
-//					if (aFileNotFound != null) {
-//						setErrorMessage("ERROR: Template not found: " + aFileNotFound);
-//						setPageComplete(false);
-//					} else {
-//						customPathOfTemplates = true;
-//						setPageComplete(true);
-//					}
-//				} catch (Exception e2) {
-//					e2.printStackTrace();
-//					setPageComplete(false);
-//				}
-//				
-//				
-//			}
-//		});
-//
-//		textTemplateLocation = new Text(groupTemplates, SWT.SINGLE | SWT.BORDER);
-//		textTemplateLocation.setEditable(false);
-//		textTemplateLocation.setLayoutData(gd);
-		
-		
-//		Group groupUpdateDb = new Group(container, SWT.NONE);
-//		groupUpdateDb.setLayout(new GridLayout(1, false));
-//		groupUpdateDb.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//
-//		checkUpdateDb = new Button(groupUpdateDb, SWT.CHECK); 
-//		checkUpdateDb.setText("Insert new Facade into BD?");
-//		checkUpdateDb.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		
+
 		
 		Group groupQueues = new Group(container, SWT.NONE);
 		groupQueues.setLayout(new GridLayout(2, false));

@@ -113,7 +113,7 @@ public class FacadeWizard extends Wizard implements INewWizard {
 		if (step1CreateProject) {
 			if (three.getCheckCreateQueues().getSelection()) {
 				if (step3PreCreateQueues && !step4CreateQueues) {
-					MessageDialog.openInformation(getShell(), "FW2 Generation", "It's a problem in queue creation, please de-active create queues");
+					MessageDialog.openInformation(getShell(), "GENFLOW Generation", "It's a problem in queue creation, please de-active create queues");
 					return false; 
 				}
 			}
@@ -214,7 +214,7 @@ public class FacadeWizard extends Wizard implements INewWizard {
 
 		} catch (Exception e) {
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
-			MessageDialog.openInformation(getShell(), "FW2 Generation", e.getMessage());
+			MessageDialog.openInformation(getShell(), "GENFLOW Generation", e.getMessage());
 			return false;
 		}
 

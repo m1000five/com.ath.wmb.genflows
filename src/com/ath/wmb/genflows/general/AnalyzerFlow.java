@@ -38,6 +38,8 @@ public class AnalyzerFlow {
 	private String context;
 	private String appSrvName;
 	private String strDomain;
+	private String bankId;
+	private String channel;
 
 	public AnalyzerFlow() {
 		super();
@@ -133,17 +135,44 @@ public class AnalyzerFlow {
 			NamedNodeMap attributes = udpAppNode.getAttributes();
 			for (int j = 0; j < attributes.getLength(); j++) {
 				Node attr = attributes.item(j);
-
 				System.out.println("NODE->attr->" + attr.getNodeName() + " " + attr.getNodeValue());
-
-				
 				if (attr.getNodeName().equals("defaultValueLiteral")) {
 					setAppSrvName(attr.getNodeValue());
 				}  
-
-				
 			}
+		}
+		
+		Node udpBankidNode = (Node) xpath.evaluate(
+				"//ecore:EPackage/eClassifiers/eStructuralFeatures[@name='UDP_BankId']",
+				getDocument(), XPathConstants.NODE);
 
+		if (udpBankidNode != null && udpBankidNode.getAttributes() != null) {
+			setFacadeNode(true);
+			NamedNodeMap attributes = udpBankidNode.getAttributes();
+			for (int j = 0; j < attributes.getLength(); j++) {
+				Node attr = attributes.item(j);
+				System.out.println("NODE->attr->" + attr.getNodeName() + " " + attr.getNodeValue());
+				if (attr.getNodeName().equals("defaultValueLiteral")) {
+					setBankId(attr.getNodeValue());
+				}  
+			}
+		}
+		
+		
+		Node udpChannel = (Node) xpath.evaluate(
+				"//ecore:EPackage/eClassifiers/eStructuralFeatures[@name='UDP_Channel']",
+				getDocument(), XPathConstants.NODE);
+
+		if (udpChannel != null && udpChannel.getAttributes() != null) {
+			setFacadeNode(true);
+			NamedNodeMap attributes = udpChannel.getAttributes();
+			for (int j = 0; j < attributes.getLength(); j++) {
+				Node attr = attributes.item(j);
+				System.out.println("NODE->attr->" + attr.getNodeName() + " " + attr.getNodeValue());
+				if (attr.getNodeName().equals("defaultValueLiteral")) {
+					setChannel(attr.getNodeValue());
+				}  
+			}
 		}
 
 
@@ -277,6 +306,22 @@ public class AnalyzerFlow {
 
 	public void setStrDomain(String strDomain) {
 		this.strDomain = strDomain;
+	}
+
+	public String getBankId() {
+		return bankId;
+	}
+
+	public void setBankId(String bankId) {
+		this.bankId = bankId;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
 	}
 
 }

@@ -8,18 +8,19 @@ import java.util.LinkedHashSet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -49,6 +50,7 @@ import com.ath.wmb.genflows.general.AnalyzerWsdl;
 import com.ath.wmb.genflows.general.FacadeConstants;
 import com.ath.wmb.genflows.general.ParticularConstants;
 
+
 public class ParticularPageOne extends WizardPage {
 
 	private Composite container;
@@ -57,7 +59,7 @@ public class ParticularPageOne extends WizardPage {
 
 	private String domain;
 	private String srvname;
-	private String oprname;
+	private String oprname; 
 	private String projectname;
 	private String orgname;
 	private String bankid;
@@ -111,9 +113,12 @@ public class ParticularPageOne extends WizardPage {
 
 		namespace = "";
 		domain = "";
-		srvname = "";
-		oprname = "";
+		orgname = "";
+		channel = "";
+		setSrvname("");
+		oprname = ""; 
 		projectname = "";
+		bankid = "";
 	}
 
 	@Override
@@ -180,8 +185,8 @@ public class ParticularPageOne extends WizardPage {
 
 					nameOfSelectWSDL = (inputSource.getName());
 					if (nameOfSelectWSDL.indexOf(".") != -1) {
-						srvname = nameOfSelectWSDL.substring(0, nameOfSelectWSDL.indexOf("."));
-						srvnameText.setText(srvname);
+						setSrvname(nameOfSelectWSDL.substring(0, nameOfSelectWSDL.indexOf(".")));
+						srvnameText.setText(getSrvname());
 					}
 
 					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
@@ -226,6 +231,9 @@ public class ParticularPageOne extends WizardPage {
 		comboOperations = (new Combo(container, SWT.READ_ONLY));
 		comboOperations.setBounds(50, 50, 150, 65);
 		
+		
+		
+		
 		String arrayOperations[];
 		if (setOperations != null && !setOperations.isEmpty()) {
 			arrayOperations = new String[setOperations.size()];
@@ -244,6 +252,19 @@ public class ParticularPageOne extends WizardPage {
 		if (oprname != null) {
 			comboOperations.setText(oprname);
 		}
+		
+		Label label7 = new Label(container, SWT.NONE);
+		label7.setText(FacadeConstants.MSG_BANK_LABEL);
+		
+		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		orgText.setText(orgname);
+		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		Label label5 = new Label(container, SWT.NONE);
+		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
+		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		srvnameText.setText(getSrvname());
+		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(ParticularConstants.DOMAIN_LABEL);
@@ -266,10 +287,114 @@ public class ParticularPageOne extends WizardPage {
 			comboDomains.setText(domain);
 		}
 		
+		Label labelChannelDom = new Label(container, SWT.NONE);
+		labelChannelDom.setText(FacadeConstants.CHANNEL_LABEL);
+
+		comboChannels = new Combo(container, SWT.READ_ONLY);
+		comboChannels.setBounds(50, 50, 150, 65);
+
+		String arrayIfxDomains[] = { "PB", "BM", "BABN" };
+
+		comboChannels.setItems(arrayIfxDomains);
+		comboChannels.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent event) {
+
+				channel = (comboChannels.getText());
+
+			}
+		});
+		
+		if (channel != null && channel != "") {
+			comboChannels.setText(channel);
+		}
+
+		
+		
+		Label label8 = new Label(container, SWT.NONE);
+		label8.setText(FacadeConstants.MSG_BANKID_LABEL);
+		bankidText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		bankidText.setText(bankid);
+		bankidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		labelProjName = new Label(container, SWT.NONE);
+		labelProjName.setText("Project Name");
+		labelProjValue = new Label(container, SWT.NONE);
+		labelProjValue.setText("");
+		labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		MyModifyListener listener = new MyModifyListener();
+		
+		srvnameText.addModifyListener(listener);
+		comboDomains.addModifyListener(listener);
+		comboChannels.addModifyListener(listener);
+		orgText.addModifyListener(listener);
+		bankidText.addModifyListener(listener);
+		
 
 		setControl(container);
 		setPageComplete(false);
 
+	}
+	
+	private class MyModifyListener implements ModifyListener {
+		public void modifyText(ModifyEvent e) {
+			setPageComplete(false); 
+			
+			setSrvname(srvnameText.getText().trim());
+			if (StringUtils.isBlank(getSrvname())) {
+				setErrorMessage("ERROR: Service Name Null");
+				return;
+			}
+
+			setDomain(comboDomains.getText());
+			if (StringUtils.isBlank(getDomain())) {
+				setErrorMessage("ERROR: Domain Null");
+				return;
+			}
+
+			setChannel((comboChannels.getText()));
+			if (StringUtils.isBlank(getChannel())) {
+				setErrorMessage("ERROR: Channel Null");
+				return;
+			}
+
+			setOrgname((orgText.getText().trim()));
+			if (StringUtils.isBlank(getOrgname())) {
+				setErrorMessage("ERROR: ORG Name Null");
+				return;
+			}
+
+			setProjectname(getSrvname() + "_" + getOrgname());
+
+			labelProjName.setText("Project Name:");
+			labelProjName.setVisible(true);
+			labelProjValue.setText(getProjectname());
+			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			
+			particularProject.setDomain(getDomain());
+			particularProject.setSrvName(getSrvname()); 
+			particularProject.setOprName(getOprname()); 
+			
+			//
+			// int length = projectname.length();
+			//
+
+			setBankid((bankidText.getText().trim()));
+			//
+			// if (length > 60) {
+			// setErrorMessage("The length of Project Name is very long");
+			// } else {
+			// setErrorMessage(null);
+			// }
+
+			setErrorMessage(null);
+
+			setPageComplete(true);
+
+		}
 	}
 
 	private void processWsdl() {
@@ -341,6 +466,9 @@ public class ParticularPageOne extends WizardPage {
 			
 			oprname =  analyzerFlow.getOprname();
 			domain = analyzerFlow.getStrDomain();
+			setSrvname(analyzerFlow.getAppSrvName());
+			channel = analyzerFlow.getChannel();
+			bankid = analyzerFlow.getBankId();
 			
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
@@ -399,6 +527,70 @@ public class ParticularPageOne extends WizardPage {
 
 	public void setParticularProject(BAthParticularProject particularProject) {
 		this.particularProject = particularProject;
+	}
+
+	public String getSrvname() {
+		return srvname;
+	}
+
+	public void setSrvname(String srvname) {
+		this.srvname = srvname;
+	}
+
+	public String getNamespace() {
+		return namespace;
+	}
+
+	public void setNamespace(String namespace) {
+		this.namespace = namespace;
+	}
+
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
+	public String getOprname() {
+		return oprname;
+	}
+
+	public void setOprname(String oprname) {
+		this.oprname = oprname;
+	}
+
+	public String getProjectname() {
+		return projectname;
+	}
+
+	public void setProjectname(String projectname) {
+		this.projectname = projectname;
+	}
+
+	public String getOrgname() {
+		return orgname;
+	}
+
+	public void setOrgname(String orgname) {
+		this.orgname = orgname;
+	}
+
+	public String getBankid() {
+		return bankid;
+	}
+
+	public void setBankid(String bankid) {
+		this.bankid = bankid;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
 	}
 
 }
