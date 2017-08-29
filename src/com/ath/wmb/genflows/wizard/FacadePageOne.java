@@ -326,7 +326,7 @@ public class FacadePageOne extends WizardPage {
 			}
 
 
-			projectname = srvname + "SvcFcdWs";
+			projectname = srvname + "FcdWs";
 
 			labelProjName.setText("Project Name:");
 			labelProjName.setVisible(true);

@@ -7,7 +7,7 @@ public interface ParticularConstants {
 	public String STEPS_LABEL = "Steps";
 	public String DOMAIN_LABEL = "Domain"; 
 	public String CHANNEL_LABEL = "Channel";
-	public String SERVICE_NAME_LABEL = "Service Name";
+	public String SERVICE_NAME_LABEL = "Service Facade Name";
 	public String DATASOURCE_NAME_LABEL = "Datasource";
 	public String OP_NAME_LABEL = "Operation Name";
 	public String OP_OPERATION_LABEL = "Operation";

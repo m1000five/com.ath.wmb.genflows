@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
 import com.ath.esqltool.domain.BAthParticularProject;
 import com.ath.wmb.genflows.general.AnalyzerFlow;
 import com.ath.wmb.genflows.general.AnalyzerWsdl;
-import com.ath.wmb.genflows.general.FacadeConstants;
+import com.ath.wmb.genflows.general.ParticularConstants;
 import com.ath.wmb.genflows.general.ParticularConstants;
 
 
@@ -105,6 +105,8 @@ public class ParticularPageOne extends WizardPage {
 	private String nameOfSelectWSDL;
 	private Document selectWSDL;
 
+	private String facadeProjectName;
+
 	public ParticularPageOne(ISelection selection) {
 		super("Specific Basic Page");
 
@@ -115,7 +117,7 @@ public class ParticularPageOne extends WizardPage {
 		domain = "";
 		orgname = "";
 		channel = "";
-		setSrvname("");
+		srvname = "";
 		oprname = ""; 
 		projectname = "";
 		bankid = "";
@@ -254,14 +256,14 @@ public class ParticularPageOne extends WizardPage {
 		}
 		
 		Label label7 = new Label(container, SWT.NONE);
-		label7.setText(FacadeConstants.MSG_BANK_LABEL);
+		label7.setText(ParticularConstants.MSG_BANK_LABEL);
 		
 		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		orgText.setText(orgname);
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		Label label5 = new Label(container, SWT.NONE);
-		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
+		label5.setText(ParticularConstants.SERVICE_NAME_LABEL);
 		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		srvnameText.setText(getSrvname());
 		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -288,7 +290,7 @@ public class ParticularPageOne extends WizardPage {
 		}
 		
 		Label labelChannelDom = new Label(container, SWT.NONE);
-		labelChannelDom.setText(FacadeConstants.CHANNEL_LABEL);
+		labelChannelDom.setText(ParticularConstants.CHANNEL_LABEL);
 
 		comboChannels = new Combo(container, SWT.READ_ONLY);
 		comboChannels.setBounds(50, 50, 150, 65);
@@ -313,13 +315,13 @@ public class ParticularPageOne extends WizardPage {
 		
 		
 		Label label8 = new Label(container, SWT.NONE);
-		label8.setText(FacadeConstants.MSG_BANKID_LABEL);
+		label8.setText(ParticularConstants.MSG_BANKID_LABEL);
 		bankidText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		bankidText.setText(bankid);
 		bankidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		labelProjName = new Label(container, SWT.NONE);
-		labelProjName.setText("Project Name");
+		labelProjName.setText("Project Specific Name:");
 		labelProjValue = new Label(container, SWT.NONE);
 		labelProjValue.setText("");
 		labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -466,7 +468,7 @@ public class ParticularPageOne extends WizardPage {
 			
 			oprname =  analyzerFlow.getOprname();
 			domain = analyzerFlow.getStrDomain();
-			setSrvname(analyzerFlow.getAppSrvName());
+			srvname = analyzerFlow.getAppSrvName();
 			channel = analyzerFlow.getChannel();
 			bankid = analyzerFlow.getBankId();
 			
