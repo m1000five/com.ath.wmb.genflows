@@ -203,8 +203,6 @@ public class FacadeWizard extends Wizard implements INewWizard {
 								.next();
 						
 						particularGen.generar(bAthParticularProject);
-						
-						
 					}
 					
 				}

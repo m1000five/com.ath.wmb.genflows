@@ -1,7 +1,17 @@
 package com.ath.wmb.genflows.wizard;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
@@ -12,12 +22,18 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.ath.esqltool.delegates.BAthParticularGenerator;
 import com.ath.esqltool.domain.BAthParticularProject;
 import com.ath.wmb.genflows.Activator;
+import com.ath.wmb.genflows.handlers.ErrorHandlerInterface;
 
 public class ParticularWizard extends Wizard implements INewWizard {
 
@@ -34,6 +50,9 @@ public class ParticularWizard extends Wizard implements INewWizard {
 
 	private BAthParticularProject particularProject = new BAthParticularProject();
 
+	private ErrorHandlerInterface customHandlerInterface;
+
+	private ArrayList<IFile> listOfIfiles = new ArrayList<IFile>();
 
 	public ParticularWizard() {
 		super();
@@ -61,25 +80,29 @@ public class ParticularWizard extends Wizard implements INewWizard {
 
 		two.setParticularProject(particularProject);
 
+		one.setErrorhandler(customHandlerInterface);
+
+		// customHandlerInterface.onError();
+
 		addPage(one);
 		addPage(two);
+
 	}
 
 	@Override
 	public boolean performFinish() {
-		
+
 		System.out.println(one.getSrvname());
 		System.out.println(two.getTextProjectLocation().getText());
 
 		ILog log = Activator.getDefault().getLog();
-		
+
 		try {
-			
+
 			particularProject.setCurrentDir(two.getTextProjectLocation().getText());
 			System.out.println(two.getTextProjectLocation().getText());
 
-			particularProject.setNamespace(one.getNamespace());  
-
+			particularProject.setNamespace(one.getNamespace());
 
 			particularProject.setDomain(one.getDomain());
 			particularProject.setSrvName(one.getSrvname());
@@ -87,22 +110,52 @@ public class ParticularWizard extends Wizard implements INewWizard {
 			particularProject.setChannel(one.getChannel());
 			particularProject.setOrgName(one.getOrgname());
 			particularProject.setBankId(one.getBankid());
-			
+
 			particularProject.setIdeRequirement(two.getTextIdeRequirement().getText());
-			
+
 			log.log(new Status(IStatus.INFO, "com.ath.wmb.genflows", particularProject.toString()));
-			
-			BAthParticularGenerator generator = new BAthParticularGenerator(); 
+
+			BAthParticularGenerator generator = new BAthParticularGenerator();
 			generator.generar(particularProject);
-			
+
 			step1CreateProject = true;
-			
+
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			IWorkbenchWindow window = workbench == null ? null : workbench.getActiveWorkbenchWindow();
+			IWorkbenchPage activePage = window == null ? null : window.getActivePage();
+			IEditorPart editor = activePage == null ? null : activePage.getActiveEditor();
+			IEditorInput input = editor == null ? null : editor.getEditorInput();
+			IProject project = input.getAdapter(IProject.class); 
+			if (project == null) {
+				IResource resource = input.getAdapter(IResource.class);
+				if (resource != null) {
+					project = resource.getProject();
+					processContainer(project);
+					if (!listOfIfiles.isEmpty()) {
+						Iterator<IFile> iterator = listOfIfiles.iterator();
+						while (iterator.hasNext()) {
+							IFile iFile = (IFile) iterator.next();
+//							IBMdefined\org\w3\www\xml\_1998\namespace\xml.xsd
+//							iFile.getFullPath(); 
+							System.out.println("FILE->" + iFile.getProjectRelativePath().toString());
+							File flowFile = iFile.getRawLocation().makeAbsolute().toFile();
+							
+							File newFile = (new File(particularProject.getProjectPath() + iFile.getProjectRelativePath().toString()));
+							newFile.mkdirs();
+							
+							
+							Files.copy(flowFile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+						}
+					}
+				}
+			}
+
 		} catch (Exception e) {
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
 			MessageDialog.openInformation(getShell(), "GENFLOW Generation", e.getMessage());
 			return false;
 		}
-		
+
 		try {
 			IProjectDescription description = null;
 
@@ -122,17 +175,42 @@ public class ParticularWizard extends Wizard implements INewWizard {
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", exception_p.getMessage(), exception_p));
 		} catch (Exception e) {
 			if (step3PreCreateQueues) {
-//				pcfCM.DisplayException(e);
+				// pcfCM.DisplayException(e);
 			}
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
 		}
-		
+
+		String additionalMsg = "";
+
+		MessageDialog.openInformation(getShell(), "Specific Generation",
+				"A new project: " + particularProject.getName() + " has been generated. " + additionalMsg);
 
 		return true;
 	}
 
+	void processContainer(IContainer container) throws CoreException {
+		IResource[] members = container.members();
+
+		for (IResource member : members) {
+			if (member instanceof IContainer) {
+				processContainer((IContainer) member);
+			} else if (member instanceof IFile) {
+				System.out.println("FILE->" + member.getName());
+				if (member.getName().indexOf(".wsdl") != -1 || member.getName().indexOf(".WSDL") != -1
+						|| member.getName().indexOf(".xsd") != -1 || member.getName().indexOf(".XSD") != -1) {
+					listOfIfiles.add((IFile) member);
+				}
+			}
+		}
+	}
+
 	@Override
 	public void init(IWorkbench arg0, IStructuredSelection arg1) {
+
+	}
+
+	public void setErrorhandler(ErrorHandlerInterface customErrorHandlerInterface) {
+		this.customHandlerInterface = customErrorHandlerInterface;
 
 	}
 

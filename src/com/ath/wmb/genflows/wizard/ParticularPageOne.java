@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
@@ -48,8 +49,8 @@ import com.ath.esqltool.domain.BAthParticularProject;
 import com.ath.wmb.genflows.general.AnalyzerFlow;
 import com.ath.wmb.genflows.general.AnalyzerWsdl;
 import com.ath.wmb.genflows.general.ParticularConstants;
+import com.ath.wmb.genflows.handlers.ErrorHandlerInterface;
 import com.ath.wmb.genflows.general.ParticularConstants;
-
 
 public class ParticularPageOne extends WizardPage {
 
@@ -59,7 +60,7 @@ public class ParticularPageOne extends WizardPage {
 
 	private String domain;
 	private String srvname;
-	private String oprname; 
+	private String oprname;
 	private String projectname;
 	private String orgname;
 	private String bankid;
@@ -107,6 +108,10 @@ public class ParticularPageOne extends WizardPage {
 
 	private String facadeProjectName;
 
+	private StringBuffer errorMsg = new StringBuffer();
+
+	private ErrorHandlerInterface customHandlerInterface;
+
 	public ParticularPageOne(ISelection selection) {
 		super("Specific Basic Page");
 
@@ -118,7 +123,7 @@ public class ParticularPageOne extends WizardPage {
 		orgname = "";
 		channel = "";
 		srvname = "";
-		oprname = ""; 
+		oprname = "";
 		projectname = "";
 		bankid = "";
 	}
@@ -148,7 +153,7 @@ public class ParticularPageOne extends WizardPage {
 		Button checkPassthrough = new Button(group, SWT.CHECK);
 		checkPassthrough.setText(ParticularConstants.PASSTHROUGH);
 		checkPassthrough.setSelection(true);
-		
+
 		checkPassthrough.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -225,17 +230,13 @@ public class ParticularPageOne extends WizardPage {
 
 			}
 		});
-		
-		
+
 		Label labelOperation = new Label(container, SWT.NONE);
 		labelOperation.setText(ParticularConstants.OP_NAME_LABEL);
-		
+
 		comboOperations = (new Combo(container, SWT.READ_ONLY));
 		comboOperations.setBounds(50, 50, 150, 65);
-		
-		
-		
-		
+
 		String arrayOperations[];
 		if (setOperations != null && !setOperations.isEmpty()) {
 			arrayOperations = new String[setOperations.size()];
@@ -254,20 +255,20 @@ public class ParticularPageOne extends WizardPage {
 		if (oprname != null) {
 			comboOperations.setText(oprname);
 		}
-		
+
 		Label label7 = new Label(container, SWT.NONE);
 		label7.setText(ParticularConstants.MSG_BANK_LABEL);
-		
+
 		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		orgText.setText(orgname);
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		Label label5 = new Label(container, SWT.NONE);
 		label5.setText(ParticularConstants.SERVICE_NAME_LABEL);
 		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		srvnameText.setText(getSrvname());
 		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(ParticularConstants.DOMAIN_LABEL);
 
@@ -276,7 +277,7 @@ public class ParticularPageOne extends WizardPage {
 
 		String arraydomains[] = { "accounts", "customers", "payments" };
 
-		comboDomains.setItems(arraydomains); 
+		comboDomains.setItems(arraydomains);
 		comboDomains.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -284,11 +285,11 @@ public class ParticularPageOne extends WizardPage {
 				domain = comboDomains.getText();
 			}
 		});
-		
+
 		if (domain != null && domain.length() > 0) {
 			comboDomains.setText(domain);
 		}
-		
+
 		Label labelChannelDom = new Label(container, SWT.NONE);
 		labelChannelDom.setText(ParticularConstants.CHANNEL_LABEL);
 
@@ -307,43 +308,44 @@ public class ParticularPageOne extends WizardPage {
 
 			}
 		});
-		
+
 		if (channel != null && channel != "") {
 			comboChannels.setText(channel);
 		}
 
-		
-		
 		Label label8 = new Label(container, SWT.NONE);
 		label8.setText(ParticularConstants.MSG_BANKID_LABEL);
 		bankidText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		bankidText.setText(bankid);
 		bankidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		labelProjName = new Label(container, SWT.NONE);
 		labelProjName.setText("Project Specific Name:");
 		labelProjValue = new Label(container, SWT.NONE);
 		labelProjValue.setText("");
 		labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
+		if (errorMsg.length() > 0) {
+			MessageDialog.openInformation(getShell(), "Specific Generation", errorMsg.toString());
+		}
+
 		MyModifyListener listener = new MyModifyListener();
-		
+
 		srvnameText.addModifyListener(listener);
 		comboDomains.addModifyListener(listener);
 		comboChannels.addModifyListener(listener);
 		orgText.addModifyListener(listener);
 		bankidText.addModifyListener(listener);
-		
 
 		setControl(container);
 		setPageComplete(false);
 
 	}
-	
+
 	private class MyModifyListener implements ModifyListener {
 		public void modifyText(ModifyEvent e) {
-			setPageComplete(false); 
-			
+			setPageComplete(false);
+
 			setSrvname(srvnameText.getText().trim());
 			if (StringUtils.isBlank(getSrvname())) {
 				setErrorMessage("ERROR: Service Name Null");
@@ -374,12 +376,11 @@ public class ParticularPageOne extends WizardPage {
 			labelProjName.setVisible(true);
 			labelProjValue.setText(getProjectname());
 			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
-			
+
 			particularProject.setDomain(getDomain());
-			particularProject.setSrvName(getSrvname()); 
-			particularProject.setOprName(getOprname()); 
-			
+			particularProject.setSrvName(getSrvname());
+			particularProject.setOprName(getOprname());
+
 			//
 			// int length = projectname.length();
 			//
@@ -428,6 +429,11 @@ public class ParticularPageOne extends WizardPage {
 		IEditorPart editor = activePage == null ? null : activePage.getActiveEditor();
 		IEditorInput input = editor == null ? null : editor.getEditorInput();
 
+		if (input == null) {
+			errorMsg.append("Please select the initial Facade Flow.");
+			return;
+		}
+
 		IProject project = input.getAdapter(IProject.class);
 		if (project == null) {
 			IResource resource = input.getAdapter(IResource.class);
@@ -457,6 +463,16 @@ public class ParticularPageOne extends WizardPage {
 				&& input.getToolTipText().indexOf(".msgflow") != -1) {
 			System.out.println("Es flujo");
 		} else {
+
+			errorMsg.append("The resource: ");
+			if (input.getToolTipText().length() > 0) {
+				errorMsg.append(input.getToolTipText());
+			} else {
+				errorMsg.append(project.getFullPath().toString());
+			}
+			errorMsg.append(
+					" - Is Not a Flow of Facade. Please select the initial Facade Flow.");
+
 			return;
 		}
 
@@ -465,13 +481,13 @@ public class ParticularPageOne extends WizardPage {
 
 			analyzerFlow.init(flowFile);
 			analyzerFlow.parseFacadeFlow();
-			
-			oprname =  analyzerFlow.getOprname();
+
+			oprname = analyzerFlow.getOprname();
 			domain = analyzerFlow.getStrDomain();
 			srvname = analyzerFlow.getAppSrvName();
 			channel = analyzerFlow.getChannel();
 			bankid = analyzerFlow.getBankId();
-			
+
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {
@@ -506,6 +522,7 @@ public class ParticularPageOne extends WizardPage {
 				System.out.println("FILE------->" + member.getName());
 				if (member.getName().indexOf(".wsdl") != -1 || member.getName().indexOf(".WSDL") != -1) {
 					wsdlFile = (IFile) member;
+					break;
 				}
 			}
 		}
@@ -593,6 +610,11 @@ public class ParticularPageOne extends WizardPage {
 
 	public void setChannel(String channel) {
 		this.channel = channel;
+	}
+
+	public void setErrorhandler(ErrorHandlerInterface customHandlerInterface) {
+		this.customHandlerInterface = customHandlerInterface;
+
 	}
 
 }
