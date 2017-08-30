@@ -4,8 +4,17 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -32,6 +41,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.ath.esqltool.delegates.BAthParticularGenerator;
 import com.ath.esqltool.domain.BAthParticularProject;
+import com.ath.esqltool.util.BUtil;
 import com.ath.wmb.genflows.Activator;
 import com.ath.wmb.genflows.handlers.ErrorHandlerInterface;
 
@@ -110,8 +120,22 @@ public class ParticularWizard extends Wizard implements INewWizard {
 			particularProject.setChannel(one.getChannel());
 			particularProject.setOrgName(one.getOrgname());
 			particularProject.setBankId(one.getBankid());
+			particularProject.setPassthrough(one.isPassthrough());
 
 			particularProject.setIdeRequirement(two.getTextIdeRequirement().getText());
+			
+			particularProject.setSetNamespaces(one.getSetOthersNamespaces());
+			particularProject.setSetSpecificNamespaces(one.getSetSpecificNamespaces());
+			
+			HashMap<String, String> mapNamespaces = BUtil.genOthersNamespaces(one.getSetOthersNamespaces());
+			particularProject.setMapOthersNamespaces(mapNamespaces);
+			
+			HashSet<String> tmpSet = new HashSet<String>(); 
+			tmpSet.addAll(mapNamespaces.keySet()); 
+			
+			HashMap<String, String> mapSpecificNamespaces = BUtil.genOthersNamespaces(one.getSetSpecificNamespaces(), tmpSet);
+
+			particularProject.setMapSpecificNamespaces(mapSpecificNamespaces);
 
 			log.log(new Status(IStatus.INFO, "com.ath.wmb.genflows", particularProject.toString()));
 
@@ -120,35 +144,51 @@ public class ParticularWizard extends Wizard implements INewWizard {
 
 			step1CreateProject = true;
 
-			IWorkbench workbench = PlatformUI.getWorkbench();
-			IWorkbenchWindow window = workbench == null ? null : workbench.getActiveWorkbenchWindow();
-			IWorkbenchPage activePage = window == null ? null : window.getActivePage();
-			IEditorPart editor = activePage == null ? null : activePage.getActiveEditor();
-			IEditorInput input = editor == null ? null : editor.getEditorInput();
-			IProject project = input.getAdapter(IProject.class); 
-			if (project == null) {
-				IResource resource = input.getAdapter(IResource.class);
-				if (resource != null) {
-					project = resource.getProject();
-					processContainer(project);
-					if (!listOfIfiles.isEmpty()) {
-						Iterator<IFile> iterator = listOfIfiles.iterator();
-						while (iterator.hasNext()) {
-							IFile iFile = (IFile) iterator.next();
-//							IBMdefined\org\w3\www\xml\_1998\namespace\xml.xsd
-//							iFile.getFullPath(); 
-							System.out.println("FILE->" + iFile.getProjectRelativePath().toString());
-							File flowFile = iFile.getRawLocation().makeAbsolute().toFile();
-							
-							File newFile = (new File(particularProject.getProjectPath() + iFile.getProjectRelativePath().toString()));
-							newFile.mkdirs();
-							
-							
-							Files.copy(flowFile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			
+			if (particularProject.isPassthrough()) {
+				IWorkbench workbench = PlatformUI.getWorkbench();
+				IWorkbenchWindow window = workbench == null ? null : workbench.getActiveWorkbenchWindow();
+				IWorkbenchPage activePage = window == null ? null : window.getActivePage();
+				IEditorPart editor = activePage == null ? null : activePage.getActiveEditor();
+				IEditorInput input = editor == null ? null : editor.getEditorInput();
+				IProject project = input.getAdapter(IProject.class); 
+				if (project == null) {
+					IResource resource = input.getAdapter(IResource.class);
+					if (resource != null) {
+						project = resource.getProject();
+						processContainer(project);
+						if (!listOfIfiles.isEmpty()) {
+							Iterator<IFile> iterator = listOfIfiles.iterator();
+							while (iterator.hasNext()) {
+								IFile iFile = (IFile) iterator.next();
+//								IBMdefined\org\w3\www\xml\_1998\namespace\xml.xsd
+//								iFile.getFullPath(); 
+								System.out.println("FILE->" + iFile.getProjectRelativePath().toString());
+								File flowFile = iFile.getRawLocation().makeAbsolute().toFile();
+								
+								File newFile = (new File(particularProject.getProjectPath() + iFile.getProjectRelativePath().toString()));
+								newFile.mkdirs();
+								
+								
+								Files.copy(flowFile.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+							}
 						}
 					}
 				}
+			} else { 
+				particularProject.setWsdlRelativePathName("model/" + one.getNameOfSelectWSDL());
+				
+				if (one.getSelectWSDL() != null) {
+					Transformer transformer = TransformerFactory.newInstance().newTransformer();
+					File file = new File(particularProject.getProjectPath() + particularProject.getWsdlRelativePathName());
+					file.getParentFile().mkdirs(); 
+					Result output = new StreamResult(file); 
+					Source input = new DOMSource(one.getSelectWSDL());
+					transformer.transform(input, output);
+				}
 			}
+			
+			
 
 		} catch (Exception e) {
 			log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));

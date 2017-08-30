@@ -10,6 +10,7 @@ public interface ParticularConstants {
 	public String SERVICE_NAME_LABEL = "Facade Service Name";
 	public String DATASOURCE_NAME_LABEL = "Datasource";
 	public String OP_NAME_LABEL = "Facade Operation Name";
+	public String OP_SPEC_NAME_LABEL = "Specific Operation Name";
 	public String OP_OPERATION_LABEL = "Operation";
 	public String MSG_BANK_LABEL = "Bank/Org";
 	public String MSG_BANKID_LABEL = "BankId";

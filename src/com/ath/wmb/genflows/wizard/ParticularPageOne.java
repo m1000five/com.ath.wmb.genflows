@@ -72,39 +72,43 @@ public class ParticularPageOne extends WizardPage {
 	private String nameOfSelectWSDL;
 	private String facadeProjectName;
 
+	private String namespaceSpecific;
+	private String oprnameSpecific;
+
+	private Boolean passthrough = true;
+
+	private StringBuffer errorMsg = new StringBuffer();
+
 	private LinkedHashSet<String> setOperations = new LinkedHashSet<String>();
 	private LinkedHashSet<String> setOthersNamespaces = new LinkedHashSet<String>();
+	private LinkedHashSet<String> setSpecificNamespaces = new LinkedHashSet<String>();
+	private LinkedHashSet<String> setSpecificOperations = new LinkedHashSet<String>();
 
 	private Combo comboDomains;
 	private Combo comboChannels;
 	private Combo comboOperations;
+	private Combo comboSpecificOperations;
 
 	private Text srvnameText;
-	private Text oprnameText;
 	private Text orgText;
 	private Text bankidText;
-	private Text textWSDLLocation;
-
-	private Button checkCustomOperation;
+	private Text textSpecificWsdl;
 
 	private Label labelProjName;
 	private Label labelProjValue;
 
-	private Button mButtonSelection;
 	private Button mButtonWsdl;
 
-	private BAthParticularProject particularProject;
-
 	private IFile wsdlFile;
-	
+
 	private Document facadeWsdl;
 	private Document selectWSDL;
 
-	private StringBuffer errorMsg = new StringBuffer();
-
 	private ErrorHandlerInterface customHandlerInterface;
 
-	private Label labelSpecificWsdl;
+	private BAthParticularProject particularProject;
+
+	private Label labelSpecificOperation;
 
 	public ParticularPageOne(ISelection selection) {
 		super("Specific Basic Page");
@@ -138,7 +142,7 @@ public class ParticularPageOne extends WizardPage {
 
 		container.setLayout(layout);
 
-		Label label2 = new Label(container, SWT.NONE); 
+		Label label2 = new Label(container, SWT.NONE);
 		label2.setText(ParticularConstants.WSDL_LABEL);
 
 		Group group = new Group(container, SWT.NONE);
@@ -151,16 +155,29 @@ public class ParticularPageOne extends WizardPage {
 		checkPassthrough.addSelectionListener(new SelectionAdapter() {
 
 			@Override
-			public void widgetSelected(SelectionEvent event) {
+			public void widgetSelected(SelectionEvent event) { 
 
 				Button btn = (Button) event.getSource();
 				System.out.println(btn.getSelection());
 				if (btn.getSelection()) {
 					mButtonWsdl.setEnabled(false);
+					setPassthrough(true);
+					labelSpecificOperation.setVisible(false);
+					
+					String[] arrayOperations = new String[1];
+					arrayOperations[0] = "";
+					comboSpecificOperations.setItems(arrayOperations);
+					oprnameSpecific = "";
+					comboSpecificOperations.setVisible(false);
+					textSpecificWsdl.setText("                                             ");
 				} else {
 					mButtonWsdl.setEnabled(true);
-				}
+					setPassthrough(false);
+					labelSpecificOperation.setVisible(true);
+					comboSpecificOperations.setVisible(true);
+					textSpecificWsdl.setText("                                             ");
 
+				}
 			}
 		});
 
@@ -179,31 +196,26 @@ public class ParticularPageOne extends WizardPage {
 				if (path == null || path.length() == 0 || path.indexOf("wsdl") == -1) {
 					return;
 				}
-				labelSpecificWsdl.setText(path);
 				try {
 
 					File inputSource = new File(path);
 
 					nameOfSelectWSDL = (inputSource.getName());
-					if (nameOfSelectWSDL.indexOf(".") != -1) {
-						setSrvname(nameOfSelectWSDL.substring(0, nameOfSelectWSDL.indexOf(".")));
-						srvnameText.setText(getSrvname());
-					}
+					textSpecificWsdl.setText(inputSource.getName());
 
 					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
 					analyzerWsdl.parse(inputSource);
 					selectWSDL = (analyzerWsdl.getDocument());
 
-					namespace = analyzerWsdl.getNamespace();
-					setOthersNamespaces = analyzerWsdl.getNamespaces();
-					oprname = analyzerWsdl.getOprname();
-					oprnameText.setText(oprname);
-					setOperations = analyzerWsdl.getSetOperations();
+					namespaceSpecific = analyzerWsdl.getNamespace();
+					setSpecificNamespaces = analyzerWsdl.getNamespaces();
+					oprnameSpecific = analyzerWsdl.getOprname();
+					setSpecificOperations = analyzerWsdl.getSetOperations();
 
 					String arrayOperations[];
-					if (setOperations != null && !setOperations.isEmpty()) {
-						arrayOperations = new String[setOperations.size()];
-						Iterator<String> iterator = setOperations.iterator();
+					if (setSpecificOperations != null && !setSpecificOperations.isEmpty()) {
+						arrayOperations = new String[setSpecificOperations.size()];
+						Iterator<String> iterator = setSpecificOperations.iterator();
 						int i = 0;
 						while (iterator.hasNext()) {
 							String next = iterator.next();
@@ -214,9 +226,9 @@ public class ParticularPageOne extends WizardPage {
 						arrayOperations = new String[1];
 						arrayOperations[0] = "";
 					}
-					comboOperations.setItems(arrayOperations);
-					if (oprname != null) {
-						comboOperations.setText(oprname);
+					comboSpecificOperations.setItems(arrayOperations);
+					if (oprnameSpecific != null) {
+						comboSpecificOperations.setText(oprnameSpecific);
 					}
 				} catch (Exception e2) {
 					e2.printStackTrace();
@@ -224,17 +236,18 @@ public class ParticularPageOne extends WizardPage {
 
 			}
 		});
-		
-		labelSpecificWsdl = new Label(group, SWT.NONE);
-		labelSpecificWsdl.setText("");
-		labelSpecificWsdl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+		textSpecificWsdl = new Text(group, SWT.NONE);
+		// textSpecificWsdl.setEnabled(false);
+		textSpecificWsdl.setText("                                             ");
+		textSpecificWsdl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Label label5 = new Label(container, SWT.NONE);
 		label5.setText(ParticularConstants.SERVICE_NAME_LABEL);
 		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		srvnameText.setText(getSrvname());
 		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		Label labelOperation = new Label(container, SWT.NONE);
 		labelOperation.setText(ParticularConstants.OP_NAME_LABEL);
 
@@ -260,13 +273,20 @@ public class ParticularPageOne extends WizardPage {
 			comboOperations.setText(oprname);
 		}
 
+		labelSpecificOperation = new Label(container, SWT.NONE);
+		labelSpecificOperation.setText(ParticularConstants.OP_SPEC_NAME_LABEL);
+		labelSpecificOperation.setVisible(false);
+
+		comboSpecificOperations = (new Combo(container, SWT.READ_ONLY));
+		comboSpecificOperations.setBounds(50, 50, 150, 65);
+		comboSpecificOperations.setVisible(false);
+
 		Label label7 = new Label(container, SWT.NONE);
 		label7.setText(ParticularConstants.MSG_BANK_LABEL);
 
 		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		orgText.setText(orgname);
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
 
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(ParticularConstants.DOMAIN_LABEL);
@@ -324,17 +344,16 @@ public class ParticularPageOne extends WizardPage {
 		labelProjValue.setText("");
 		labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		
-		
-
-		
 		if (errorMsg.length() > 0) {
 			MessageDialog.openInformation(getShell(), "Specific Generation", errorMsg.toString());
 		}
 
-		MyModifyListener listener = new MyModifyListener();
+		MyModifyListener listener = new MyModifyListener(); 
 
+		textSpecificWsdl.addModifyListener(listener);
 		srvnameText.addModifyListener(listener);
+		comboOperations.addModifyListener(listener);
+		comboSpecificOperations.addModifyListener(listener);
 		comboDomains.addModifyListener(listener);
 		comboChannels.addModifyListener(listener);
 		orgText.addModifyListener(listener);
@@ -353,6 +372,19 @@ public class ParticularPageOne extends WizardPage {
 			if (StringUtils.isBlank(getSrvname())) {
 				setErrorMessage("ERROR: Service Name Null");
 				return;
+			}
+			
+			setOprname(comboOperations.getText());
+			if (StringUtils.isBlank(getOprname())) {
+				setErrorMessage("ERROR: Facade Operation Null");
+				return;
+			}
+			if (!isPassthrough()) {
+				oprnameSpecific = comboSpecificOperations.getText();
+				if (StringUtils.isBlank(oprnameSpecific)) {
+					setErrorMessage("ERROR: Specific Operation Null");
+					return;
+				}
 			}
 
 			setDomain(comboDomains.getText());
@@ -377,24 +409,14 @@ public class ParticularPageOne extends WizardPage {
 
 			labelProjName.setText("Project Name:");
 			labelProjName.setVisible(true);
-			labelProjValue.setText(getProjectname());
+			labelProjValue.setText(projectname);
 			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-			particularProject.setDomain(getDomain());
-			particularProject.setSrvName(getSrvname());
-			particularProject.setOprName(getOprname());
-
-			//
-			// int length = projectname.length();
-			//
+			particularProject.setDomain(domain);
+			particularProject.setSrvName(srvname);
+			particularProject.setOprName(oprname);
 
 			setBankid((bankidText.getText().trim()));
-			//
-			// if (length > 60) {
-			// setErrorMessage("The length of Project Name is very long");
-			// } else {
-			// setErrorMessage(null);
-			// }
 
 			setErrorMessage(null);
 
@@ -436,7 +458,7 @@ public class ParticularPageOne extends WizardPage {
 			errorMsg.append("Please select the initial Facade Flow.");
 			return;
 		}
-		//TODO revisar esta logica de project 
+		// TODO revisar esta logica de project
 		IProject project = input.getAdapter(IProject.class);
 		if (project == null) {
 			IResource resource = input.getAdapter(IResource.class);
@@ -473,8 +495,7 @@ public class ParticularPageOne extends WizardPage {
 			} else {
 				errorMsg.append(project.getFullPath().toString());
 			}
-			errorMsg.append(
-					" - Is Not a Flow of Facade. Please select the initial Facade Flow.");
+			errorMsg.append(" - Is Not a Flow of Facade. Please select the initial Facade Flow.");
 
 			return;
 		}
@@ -618,6 +639,78 @@ public class ParticularPageOne extends WizardPage {
 	public void setErrorhandler(ErrorHandlerInterface customHandlerInterface) {
 		this.customHandlerInterface = customHandlerInterface;
 
+	}
+
+	public Boolean isPassthrough() {
+		return passthrough;
+	}
+
+	public void setPassthrough(Boolean passthrough) {
+		this.passthrough = passthrough;
+	}
+
+	public String getNameOfWSDL() {
+		return nameOfWSDL;
+	}
+
+	public void setNameOfWSDL(String nameOfWSDL) {
+		this.nameOfWSDL = nameOfWSDL;
+	}
+
+	public String getNameOfSelectWSDL() {
+		return nameOfSelectWSDL;
+	}
+
+	public void setNameOfSelectWSDL(String nameOfSelectWSDL) {
+		this.nameOfSelectWSDL = nameOfSelectWSDL;
+	}
+
+	public String getFacadeProjectName() {
+		return facadeProjectName;
+	}
+
+	public void setFacadeProjectName(String facadeProjectName) {
+		this.facadeProjectName = facadeProjectName;
+	}
+
+	public String getNamespaceSpecific() {
+		return namespaceSpecific;
+	}
+
+	public void setNamespaceSpecific(String namespaceSpecific) {
+		this.namespaceSpecific = namespaceSpecific;
+	}
+
+	public LinkedHashSet<String> getSetOthersNamespaces() {
+		return setOthersNamespaces;
+	}
+
+	public void setSetOthersNamespaces(LinkedHashSet<String> setOthersNamespaces) {
+		this.setOthersNamespaces = setOthersNamespaces;
+	}
+
+	public LinkedHashSet<String> getSetSpecificNamespaces() {
+		return setSpecificNamespaces;
+	}
+
+	public void setSetSpecificNamespaces(LinkedHashSet<String> setSpecificNamespaces) {
+		this.setSpecificNamespaces = setSpecificNamespaces;
+	}
+
+	public Document getFacadeWsdl() {
+		return facadeWsdl;
+	}
+
+	public void setFacadeWsdl(Document facadeWsdl) {
+		this.facadeWsdl = facadeWsdl;
+	}
+
+	public Document getSelectWSDL() {
+		return selectWSDL;
+	}
+
+	public void setSelectWSDL(Document selectWSDL) {
+		this.selectWSDL = selectWSDL;
 	}
 
 }
