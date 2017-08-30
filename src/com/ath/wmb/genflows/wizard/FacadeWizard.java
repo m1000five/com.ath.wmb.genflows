@@ -15,8 +15,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
@@ -27,8 +30,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 import com.ath.esqltool.delegates.BAthGenerator;
 import com.ath.esqltool.delegates.BAthParticularGenerator;
@@ -136,6 +144,7 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			facadeProject.setBankId(one.getBankid());
 			
 			facadeProject.setWsdlName(one.getNameOfWSDL());
+			facadeProject.setWsdlRelativePathName("model/" + one.getNameOfWSDL());
 			facadeProject.setWsdlBinding(one.getWsdlBinding());
 			facadeProject.setWsdlPort(one.getWsdlPort());
 			facadeProject.setWsdlSvcPort(one.getWsdlSvcPort());
@@ -168,7 +177,9 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			
 			if (one.getDocumentWSDL() != null) {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
-				Result output = new StreamResult(new File(facadeProject.getProjectPath() + one.getNameOfWSDL()));
+				File file = new File(facadeProject.getProjectPath() + facadeProject.getWsdlRelativePathName());
+				file.getParentFile().mkdirs(); 
+				Result output = new StreamResult(file); 
 				Source input = new DOMSource(one.getDocumentWSDL());
 				transformer.transform(input, output);
 			}
@@ -248,6 +259,15 @@ public class FacadeWizard extends Wizard implements INewWizard {
 					
 				}
 			}
+			
+			
+			IWorkbench workbench = PlatformUI.getWorkbench();
+			IWorkbenchWindow window = workbench == null ? null : workbench.getActiveWorkbenchWindow();
+			IWorkbenchPage activePage = window == null ? null : window.getActivePage();
+
+			if (project != null && activePage != null) {
+				locateFlowAndOpen(project, activePage);
+			}
 
 		} catch (CoreException exception_p) {
 			exception_p.printStackTrace();
@@ -271,6 +291,28 @@ public class FacadeWizard extends Wizard implements INewWizard {
 				"A new project: " + facadeProject.getName() + " has been generated. " + additionalMsg);
 
 		return true; 
+	}
+	
+	
+	private boolean locateFlowAndOpen(IContainer container, IWorkbenchPage page) throws CoreException {
+		IResource[] members = container.members();
+
+		for (IResource member : members) {
+			if (member instanceof IContainer) {
+				boolean isOpen = locateFlowAndOpen((IContainer) member, page);
+				if (isOpen) {
+					return true;
+				}
+			} else if (member instanceof IFile) {
+				System.out.println("FILE------->" + member.getName());
+				if (member.getName().indexOf("REQ.msgflow") != -1 ) {
+					IFile flowfile = (IFile) member;
+					org.eclipse.ui.ide.IDE.openEditor(page, flowfile, true);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

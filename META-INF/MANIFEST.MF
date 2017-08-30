@@ -6,8 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.ath.wmb.genflows.Activator
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.eclipse.ui.workbench
+ org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.ath.esqltool.application,
@@ -84,4 +83,5 @@ Bundle-ClassPath: lib/commons-lang-2.6.jar,
  lib/velocity-1.7.jar,
  lib/commons-collections-3.2.1.jar,
  lib/commons-pool-1.5.5.jar
-Import-Package: org.eclipse.core.resources
+Import-Package: org.eclipse.core.resources,
+ org.eclipse.ui.ide

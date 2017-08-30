@@ -65,6 +65,12 @@ public class ParticularPageOne extends WizardPage {
 	private String orgname;
 	private String bankid;
 	private String channel;
+	private String nameOfWSDL;
+	private String wsdlBinding;
+	private String wsdlPort;
+	private String wsdlSvcPort;
+	private String nameOfSelectWSDL;
+	private String facadeProjectName;
 
 	private LinkedHashSet<String> setOperations = new LinkedHashSet<String>();
 	private LinkedHashSet<String> setOthersNamespaces = new LinkedHashSet<String>();
@@ -89,28 +95,16 @@ public class ParticularPageOne extends WizardPage {
 
 	private BAthParticularProject particularProject;
 
-	private Document documentWSDL = null;
-
-	private String nameOfWSDL;
-
-	private String wsdlBinding;
-
-	private String wsdlPort;
-
-	private String wsdlSvcPort;
-
 	private IFile wsdlFile;
-
+	
 	private Document facadeWsdl;
-
-	private String nameOfSelectWSDL;
 	private Document selectWSDL;
-
-	private String facadeProjectName;
 
 	private StringBuffer errorMsg = new StringBuffer();
 
 	private ErrorHandlerInterface customHandlerInterface;
+
+	private Label labelSpecificWsdl;
 
 	public ParticularPageOne(ISelection selection) {
 		super("Specific Basic Page");
@@ -144,11 +138,11 @@ public class ParticularPageOne extends WizardPage {
 
 		container.setLayout(layout);
 
-		Label label2 = new Label(container, SWT.NONE);
+		Label label2 = new Label(container, SWT.NONE); 
 		label2.setText(ParticularConstants.WSDL_LABEL);
 
 		Group group = new Group(container, SWT.NONE);
-		group.setLayout(new GridLayout(2, false));
+		group.setLayout(new GridLayout(3, false));
 
 		Button checkPassthrough = new Button(group, SWT.CHECK);
 		checkPassthrough.setText(ParticularConstants.PASSTHROUGH);
@@ -185,7 +179,7 @@ public class ParticularPageOne extends WizardPage {
 				if (path == null || path.length() == 0 || path.indexOf("wsdl") == -1) {
 					return;
 				}
-				textWSDLLocation.setText(path);
+				labelSpecificWsdl.setText(path);
 				try {
 
 					File inputSource = new File(path);
@@ -230,7 +224,17 @@ public class ParticularPageOne extends WizardPage {
 
 			}
 		});
+		
+		labelSpecificWsdl = new Label(group, SWT.NONE);
+		labelSpecificWsdl.setText("");
+		labelSpecificWsdl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+		Label label5 = new Label(container, SWT.NONE);
+		label5.setText(ParticularConstants.SERVICE_NAME_LABEL);
+		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		srvnameText.setText(getSrvname());
+		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
 		Label labelOperation = new Label(container, SWT.NONE);
 		labelOperation.setText(ParticularConstants.OP_NAME_LABEL);
 
@@ -263,11 +267,6 @@ public class ParticularPageOne extends WizardPage {
 		orgText.setText(orgname);
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		Label label5 = new Label(container, SWT.NONE);
-		label5.setText(ParticularConstants.SERVICE_NAME_LABEL);
-		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
-		srvnameText.setText(getSrvname());
-		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(ParticularConstants.DOMAIN_LABEL);
@@ -325,6 +324,10 @@ public class ParticularPageOne extends WizardPage {
 		labelProjValue.setText("");
 		labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+		
+		
+
+		
 		if (errorMsg.length() > 0) {
 			MessageDialog.openInformation(getShell(), "Specific Generation", errorMsg.toString());
 		}
@@ -433,7 +436,7 @@ public class ParticularPageOne extends WizardPage {
 			errorMsg.append("Please select the initial Facade Flow.");
 			return;
 		}
-
+		//TODO revisar esta logica de project 
 		IProject project = input.getAdapter(IProject.class);
 		if (project == null) {
 			IResource resource = input.getAdapter(IResource.class);
