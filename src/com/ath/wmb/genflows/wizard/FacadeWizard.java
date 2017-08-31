@@ -199,6 +199,9 @@ public class FacadeWizard extends Wizard implements INewWizard {
 					particular.setOrgName(bAthSpecific.getBankOrg());
 					particular.setBankId(particular.getBankId());//TODO agregar el bankID propio del especifico??
 					particular.setCodService(bAthSpecific.getCodService());
+					
+					particular.setWsdlRelativePathName(facadeProject.getWsdlRelativePathName());
+					
 					listParticulars.add(particular);
 					
 				}
@@ -251,12 +254,20 @@ public class FacadeWizard extends Wizard implements INewWizard {
 					BAthParticularProject bAthParticularProject = (BAthParticularProject) iteratorParticulars
 							.next();
 					
+					if (one.getDocumentWSDL() != null) {
+						Transformer transformer = TransformerFactory.newInstance().newTransformer();
+						File file = new File(bAthParticularProject.getProjectPath() + bAthParticularProject.getWsdlRelativePathName());
+						file.getParentFile().mkdirs(); 
+						Result output = new StreamResult(file); 
+						Source input = new DOMSource(one.getDocumentWSDL());
+						transformer.transform(input, output);
+					}
+					
 					IProjectDescription descParticular = null;
 					descParticular = ResourcesPlugin.getWorkspace().loadProjectDescription(new Path(bAthParticularProject.getProjectPath() + ".project"));
 					IProject projectPart = ResourcesPlugin.getWorkspace().getRoot().getProject(bAthParticularProject.getName());
 					projectPart.create(descParticular, null);
 					projectPart.open(null);
-					
 				}
 			}
 			

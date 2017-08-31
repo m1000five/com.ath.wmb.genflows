@@ -60,8 +60,6 @@ public class FacadePageTwo extends WizardPage {
 		super("Facade Specific Page");
 		setTitle("Specifics");
 		setDescription("Facade Wizard: Add Specific to Facade");
-		
-		setListOrchestables(new ArrayList<BAthOrchestable>());
 
 	}
 
@@ -79,6 +77,7 @@ public class FacadePageTwo extends WizardPage {
 		
 
 		checkPassthrough = new Button(container, SWT.CHECK);
+		checkPassthrough.setEnabled(false);
 		checkPassthrough.setText("Is Passthrough?");
 		checkPassthrough.setSelection(true);
 		checkPassthrough.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
@@ -128,82 +127,6 @@ public class FacadePageTwo extends WizardPage {
 		codserviceText.setText("");
 
 		
-//		searchcntlbutton = new Button(group, SWT.BUTTON1);
-//		searchcntlbutton.setText("Search");
-//
-//		searchcntlbutton.addListener(SWT.Selection, new Listener() {
-//			public void handleEvent(Event event) {
-//				if (event.widget == searchcntlbutton) {
-//					System.out.println("buscar");
-//					ILog log = Activator.getDefault().getLog();
-//					if (searchText.getText() != null && searchText.getText() != ""
-//							&& searchText.getText().length() > 5) {
-//						
-//						Integer ctrl = null;
-//						try {
-//							ctrl = Integer.parseInt(searchText.getText());
-//						} catch (NumberFormatException e) {}						
-//						
-////						try {
-////							String arraycntls[];
-////							if(ctrl != null) { 
-////								System.out.println(ctrl);
-////								BCntlBo cntlBo = databaseDao.findCtnlById(ctrl);
-////								System.out.println(cntlBo);
-////								arraycntls = new String[1];
-////								arraycntls[0] = cntlBo.getFacade_id() + "|" + cntlBo.getService_name();
-////								
-////								combocntls.setItems(arraycntls);
-////								listcntls = new ArrayList<BCntlBo>();
-////								listcntls.add(cntlBo);
-////							} else {
-////								listcntls = databaseDao.findAllCtnlByCriteria(cntlsearchText.getText());
-////								System.out.println(listcntls);
-////								
-////								
-////								
-////								if (listcntls != null) {
-////									arraycntls = new String[listcntls.size()];
-////									Iterator<BCntlBo> it = listcntls.iterator();
-////									int i = 0;
-////									while (it.hasNext()) {
-////										BCntlBo cntlBo = (BCntlBo) it.next();
-////										arraycntls[i] = cntlBo.getFacade_id() + "|" + cntlBo.getFacade_name();
-////										i++;
-////
-////									}
-////								} else {
-////									arraycntls = new String[1];
-////									arraycntls[0] = "                         ";
-////								}
-////
-////								combocntls.setItems(arraycntls);
-////								
-////								
-////								
-////							}
-////						} catch (Exception e) {
-////							e.printStackTrace();
-////							log.log(new Status(IStatus.ERROR, "com.ath.wmb.genflows", e.getMessage(), e));
-////						}
-//
-//					}
-//
-//					
-//
-//				}
-//			}
-//		});
-//		
-//		
-//		
-//		
-//		combocntls = new Combo(group, SWT.READ_ONLY);
-//		combocntls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//		//combocntls.setBounds(50, 50, 750, 65); 
-//		String cntls[] = {"                      "};
-//		
-//		combocntls.setItems(cntls);
 
 		addParticularButton = new Button(container, SWT.BUTTON1);
 		addParticularButton.setText("Add Specific");
@@ -259,7 +182,8 @@ public class FacadePageTwo extends WizardPage {
 		clearParticularButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				if (event.widget == clearParticularButton) {
-					getListOrchestables().clear();
+					listOrchestables.clear();
+					listSpecificsBo.clear();
 					listDescSteps.removeAll();
 					setNumberParticulars(0);
 				}

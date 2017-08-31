@@ -66,21 +66,19 @@ public class FacadePageOne extends WizardPage {
 	private Label labelProjName;
 	private Label labelProjValue;
 
-
 	private Button mButtonSelection;
 	private Button mButtonWsdl;
 
 	private BAthFacadeProject facadeProject;
-	
 
 	private Document documentWSDL = null;
 
 	private String nameOfWSDL;
 
 	private String wsdlBinding;
-	
+
 	private String wsdlPort;
-	
+
 	private String wsdlSvcPort;
 
 	public FacadePageOne(ISelection selection) {
@@ -144,17 +142,17 @@ public class FacadePageOne extends WizardPage {
 						srvname = getNameOfWSDL().substring(0, getNameOfWSDL().indexOf("."));
 						srvnameText.setText(srvname);
 					}
-					
+
 					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
 					analyzerWsdl.parse(inputSource);
 					setDocumentWSDL(analyzerWsdl.getDocument());
-					
+
 					namespace = analyzerWsdl.getNamespace();
 					setOthersNamespaces = analyzerWsdl.getNamespaces();
 					oprname = analyzerWsdl.getOprname();
 					oprnameText.setText(oprname);
 					setOperations = analyzerWsdl.getSetOperations();
-					
+
 					String arrayOperations[];
 					if (setOperations != null && !setOperations.isEmpty()) {
 						arrayOperations = new String[setOperations.size()];
@@ -186,47 +184,45 @@ public class FacadePageOne extends WizardPage {
 		textWSDLLocation = new Text(group, SWT.SINGLE | SWT.BORDER);
 		textWSDLLocation.setEditable(false);
 		textWSDLLocation.setLayoutData(gd);
-		
+
 		Label labelOperation = new Label(container, SWT.NONE);
 		labelOperation.setText(FacadeConstants.OP_NAME_LABEL);
-		
+
 		Group groupOperation = new Group(container, SWT.NONE);
 		groupOperation.setLayout(new GridLayout(3, false));
-		
-		setComboOperations(new Combo(groupOperation, SWT.READ_ONLY));
-		getComboOperations().setBounds(50, 50, 150, 65);
 
-		setCheckCustomOperation(new Button(groupOperation, SWT.CHECK));
-		getCheckCustomOperation().setText("Custom Operation");
-		getCheckCustomOperation().addSelectionListener(new SelectionAdapter() {
+		comboOperations = (new Combo(groupOperation, SWT.READ_ONLY));
+		comboOperations.setBounds(50, 50, 150, 65);
+
+		checkCustomOperation = new Button(groupOperation, SWT.CHECK);
+		checkCustomOperation.setText("Custom Operation");
+		checkCustomOperation.setEnabled(false);
+		checkCustomOperation.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 
-				
-
 			}
 		});
-		
+
 		oprnameText = new Text(groupOperation, SWT.BORDER | SWT.SINGLE);
 		oprnameText.setEnabled(false);
 		oprnameText.setText(oprname);
 		oprnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
+
 		Label label5 = new Label(container, SWT.NONE);
 		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
 		srvnameText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		srvnameText.setText(srvname);
 		srvnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		
+
 		Label label4 = new Label(container, SWT.NONE);
 		label4.setText(FacadeConstants.DOMAIN_LABEL);
 
 		comboDomains = new Combo(container, SWT.READ_ONLY);
 		comboDomains.setBounds(50, 50, 150, 65);
 
-		String arraydomains[] = { "accounts", "customers", "payments" };
+		String arraydomains[] = { "accounts", "customers", "inquiries", "payments", "prodschnsmngt", "transfers" };
 
 		comboDomains.setItems(arraydomains);
 		comboDomains.addSelectionListener(new SelectionAdapter() {
@@ -243,7 +239,8 @@ public class FacadePageOne extends WizardPage {
 		comboChannels = new Combo(container, SWT.READ_ONLY);
 		comboChannels.setBounds(50, 50, 150, 65);
 
-		String arrayIfxDomains[] = { "PB", "BM", "BABN" };
+		String arrayIfxDomains[] = { "PB", "MB", "BABN", "BBS", "AVP", "OFICINAS", "NA", "PPA", "K7", "PORTAL", "OFVV",
+				"INT", "PBB", "IVR", "CB" };
 
 		comboChannels.setItems(arrayIfxDomains);
 		comboChannels.addSelectionListener(new SelectionAdapter() {
@@ -256,11 +253,9 @@ public class FacadePageOne extends WizardPage {
 			}
 		});
 
-
 		Label label7 = new Label(container, SWT.NONE);
 		label7.setText(FacadeConstants.MSG_BANK_LABEL);
-		
-		
+
 		orgText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		orgText.setText(getOrgname());
 		orgText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -300,18 +295,25 @@ public class FacadePageOne extends WizardPage {
 	private class MyModifyListener implements ModifyListener {
 		public void modifyText(ModifyEvent e) {
 			setPageComplete(false);
-			
+
 			oprname = oprnameText.getText().trim();
 			if (StringUtils.isBlank(oprname)) {
 				setErrorMessage("ERROR: Operation Name Null");
 				return;
 			}
-			
+
 			srvname = srvnameText.getText().trim();
 			if (StringUtils.isBlank(srvname)) {
 				setErrorMessage("ERROR: Service Name Null");
 				return;
 			}
+
+			projectname = srvname + "FcdWs";
+
+			labelProjName.setText("Project Name:");
+			labelProjName.setVisible(true);
+			labelProjValue.setText(projectname);
+			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 			domain = comboDomains.getText();
 			if (StringUtils.isBlank(domain)) {
@@ -325,19 +327,10 @@ public class FacadePageOne extends WizardPage {
 				return;
 			}
 
-
-			projectname = srvname + "FcdWs";
-
-			labelProjName.setText("Project Name:");
-			labelProjName.setVisible(true);
-			labelProjValue.setText(projectname);
-			labelProjValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-			
-			
 			facadeProject.setDomain(getDomain());
-			facadeProject.setSrvName(getSrvname()); 
+			facadeProject.setSrvName(getSrvname());
 			facadeProject.setOprName(getOprname());
-			
+
 			//
 			// int length = projectname.length();
 			//
@@ -431,8 +424,6 @@ public class FacadePageOne extends WizardPage {
 		log.log(new Status(IStatus.INFO, "com.ath.wmb.genflows", this.toString()));
 		return super.getNextPage();
 	}
-
-
 
 	public String getChannel() {
 		return channel;
