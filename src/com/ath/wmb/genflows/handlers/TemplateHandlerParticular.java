@@ -69,16 +69,16 @@ public class TemplateHandlerParticular extends AbstractHandler {
 
 		}
 
-		System.out.println(input.getToolTipText());  
+		System.out.println(input.getToolTipText());   
 
 		if (input.getToolTipText().indexOf("FcdWs") != -1 && input.getToolTipText().indexOf(".msgflow") != -1) {
 			System.out.println("Es flujo");
 		} else {
 			errorMsg.setLength(0);
-			errorMsg.append(" El recurso: ");
+			errorMsg.append(" The resource: ");
 			errorMsg.append(input.getToolTipText());
 			errorMsg.append(
-					" - Is Not a Flow of Facade. Please select the initial Facade Flow.");
+					" - Is Not a Facade Flow. Please select the initial Facade Flow.");
 
 			return false;
 		}

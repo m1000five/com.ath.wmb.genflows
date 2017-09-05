@@ -46,11 +46,10 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.ath.esqltool.domain.BAthParticularProject;
-import com.ath.wmb.genflows.general.AnalyzerFlow;
-import com.ath.wmb.genflows.general.AnalyzerWsdl;
+import com.ath.esqltool.util.AnalyzerFlow;
+import com.ath.esqltool.util.AnalyzerWsdl;
 import com.ath.wmb.genflows.general.ParticularConstants;
 import com.ath.wmb.genflows.handlers.ErrorHandlerInterface;
-import com.ath.wmb.genflows.general.ParticularConstants;
 
 public class ParticularPageOne extends WizardPage {
 

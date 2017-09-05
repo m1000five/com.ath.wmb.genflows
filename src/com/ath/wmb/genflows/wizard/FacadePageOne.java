@@ -29,8 +29,8 @@ import org.eclipse.swt.widgets.Text;
 import org.w3c.dom.Document;
 
 import com.ath.esqltool.domain.BAthFacadeProject;
+import com.ath.esqltool.util.AnalyzerWsdl;
 import com.ath.wmb.genflows.Activator;
-import com.ath.wmb.genflows.general.AnalyzerWsdl;
 import com.ath.wmb.genflows.general.FacadeConstants;
 
 public class FacadePageOne extends WizardPage {
