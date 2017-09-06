@@ -16,5 +16,6 @@ public interface ParticularConstants {
 	public String MSG_BANKID_LABEL = "BankId";
 	public String WSDL_LABEL = "WSDL";
 	public String PASSTHROUGH = "Is Passthrough?";
+	public String MSG_CODSERIVE_LABEL = "Cod Service:";
 
 }

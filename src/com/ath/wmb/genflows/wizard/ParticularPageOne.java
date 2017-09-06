@@ -70,6 +70,7 @@ public class ParticularPageOne extends WizardPage {
 	private String wsdlSvcPort;
 	private String nameOfSelectWSDL;
 	private String facadeProjectName;
+	private String codService;
 
 	private String namespaceSpecific;
 	private String oprnameSpecific;
@@ -92,6 +93,7 @@ public class ParticularPageOne extends WizardPage {
 	private Text orgText;
 	private Text bankidText;
 	private Text textSpecificWsdl;
+	private Text codserviceText;
 
 	private Label labelProjName;
 	private Label labelProjValue;
@@ -336,6 +338,14 @@ public class ParticularPageOne extends WizardPage {
 		bankidText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		bankidText.setText(bankid);
 		bankidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
+		
+		Label labelCntl = new Label(container, SWT.NONE);
+		labelCntl.setText(ParticularConstants.MSG_CODSERIVE_LABEL);
+
+		codserviceText = new Text(container, SWT.BORDER | SWT.SINGLE);
+		codserviceText.setText("");
+
 
 		labelProjName = new Label(container, SWT.NONE);
 		labelProjName.setText("Project Specific Name:");
@@ -357,6 +367,7 @@ public class ParticularPageOne extends WizardPage {
 		comboChannels.addModifyListener(listener);
 		orgText.addModifyListener(listener);
 		bankidText.addModifyListener(listener);
+		codserviceText.addModifyListener(listener);
 
 		setControl(container);
 		setPageComplete(false);
@@ -364,6 +375,8 @@ public class ParticularPageOne extends WizardPage {
 	}
 
 	private class MyModifyListener implements ModifyListener {
+		
+
 		public void modifyText(ModifyEvent e) {
 			setPageComplete(false);
 
@@ -416,6 +429,8 @@ public class ParticularPageOne extends WizardPage {
 			particularProject.setOprName(oprname);
 
 			setBankid((bankidText.getText().trim()));
+			
+			setCodService(codserviceText.getText().trim());
 
 			setErrorMessage(null);
 
@@ -463,6 +478,8 @@ public class ParticularPageOne extends WizardPage {
 			IResource resource = input.getAdapter(IResource.class);
 			if (resource != null) {
 				project = resource.getProject();
+				
+				facadeProjectName = project.getName();
 			}
 
 			try {
@@ -710,6 +727,14 @@ public class ParticularPageOne extends WizardPage {
 
 	public void setSelectWSDL(Document selectWSDL) {
 		this.selectWSDL = selectWSDL;
+	}
+
+	public String getCodService() {
+		return codService;
+	}
+
+	public void setCodService(String codService) {
+		this.codService = codService;
 	}
 
 }

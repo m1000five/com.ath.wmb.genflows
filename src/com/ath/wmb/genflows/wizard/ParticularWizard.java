@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -121,9 +120,10 @@ public class ParticularWizard extends Wizard implements INewWizard {
 			particularProject.setOrgName(one.getOrgname());
 			particularProject.setBankId(one.getBankid());
 			particularProject.setPassthrough(one.isPassthrough());
+			particularProject.setCodService(one.getCodService());
 
 			particularProject.setIdeRequirement(two.getTextIdeRequirement().getText());
-			
+			particularProject.setFacadeName(one.getFacadeProjectName());
 			particularProject.setSetNamespaces(one.getSetOthersNamespaces());
 			particularProject.setSetSpecificNamespaces(one.getSetSpecificNamespaces());
 			
