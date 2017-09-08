@@ -164,6 +164,8 @@ public class FacadeWizard extends Wizard implements INewWizard {
 				return false;
 			}
 			
+			facadeProject.setSrvDescription(three.getTextSrvDescription().getText());
+			
 			facadeProject.setSetNamespaces(one.getSetOthersNamespaces());
 			
 			HashMap<String, String> mapNamespaces = BUtil.genOthersNamespaces(one.getSetOthersNamespaces());

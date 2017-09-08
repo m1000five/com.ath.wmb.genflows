@@ -33,6 +33,7 @@ public class FacadePageThree extends WizardPage {
 	private Text textTemplateLocation;
 	private Text textQueueManName;
 	private Text textIdeRequirement;
+	private Text textSrvDescription;
 	
 
 	private Button mButtonSelection;
@@ -134,12 +135,22 @@ public class FacadePageThree extends WizardPage {
 		groupRequirement.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		
 		
+		
+		
 		Label label4 = new Label(groupRequirement, SWT.NONE);
 		label4.setText("Id Requirement (Optional)");
 		
 		textIdeRequirement = new Text(groupRequirement, SWT.SINGLE | SWT.BORDER);
 		textIdeRequirement.setLayoutData(gd);
 		textIdeRequirement.setText(facadeProject.getIdeRequirement());
+		
+		
+		Label label5 = new Label(groupRequirement, SWT.NONE); 
+		label5.setText("Service Description");
+		
+		textSrvDescription = new Text(groupRequirement, SWT.SINGLE | SWT.BORDER);
+		textSrvDescription.setLayoutData(gd);
+		textSrvDescription.setText(facadeProject.getSrvDescription() != null? facadeProject.getSrvDescription(): "");
 
 		setControl(container);
 
@@ -208,6 +219,14 @@ public class FacadePageThree extends WizardPage {
 
 	public void setTextIdeRequirement(Text textIdeRequirement) {
 		this.textIdeRequirement = textIdeRequirement;
+	}
+
+	public Text getTextSrvDescription() {
+		return textSrvDescription;
+	}
+
+	public void setTextSrvDescription(Text textSrvDescription) {
+		this.textSrvDescription = textSrvDescription;
 	} 
 	
 	
