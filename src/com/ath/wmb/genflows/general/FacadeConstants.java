@@ -13,6 +13,7 @@ public interface FacadeConstants {
 	public String OP_OPERATION_LABEL = "Operation";
 	public String MSG_BANK_LABEL = "Bank/Org";
 	public String MSG_BANKID_LABEL = "BankId";
+	public String COD_SERVICE = "Cod Service:";
 	public String WSDL_LABEL = "WSDL";
 
 }

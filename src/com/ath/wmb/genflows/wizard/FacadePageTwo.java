@@ -25,35 +25,34 @@ import com.ath.esqltool.domain.BAthOrchestable;
 import com.ath.esqltool.domain.BAthSpecificBo;
 import com.ath.wmb.genflows.general.FacadeConstants;
 
-
-
-
 public class FacadePageTwo extends WizardPage {
-	//TODO terminar esta seccion del wizard para agregar especificos y generar los proyectos
-	
+	// TODO terminar esta seccion del wizard para agregar especificos y generar los
+	// proyectos
+
 	private Composite container;
-	
+
 	private Integer numberOrchestables = 0;
 
 	private Button checkPassthrough;
 
-	private Combo comboparticulars;
 	private Button[] radiosParticular;
+
 	private Group groupparticular;
+	private Combo comboparticulars;
 	private Combo combobanks;
-	
-	
+
 	private Group group;
 	private Text codserviceText;
+	private Text bankText;
 	private Button searchcntlbutton;
-	
+
 	private Button addParticularButton;
 	private Button clearParticularButton;
 	private org.eclipse.swt.widgets.List listDescSteps;
-	
+
 	private List<BAthOrchestable> listOrchestables = new ArrayList<BAthOrchestable>();
 	private List<BAthSpecificBo> listSpecificsBo = new ArrayList<BAthSpecificBo>();
-	
+
 	private BAthFacadeProject facadeProject;
 
 	public FacadePageTwo(ISelection selection) {
@@ -63,18 +62,13 @@ public class FacadePageTwo extends WizardPage {
 
 	}
 
-	
-
 	@Override
 	public void createControl(Composite parent) {
-		
-		
+
 		container = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		container.setLayout(layout);
 		layout.numColumns = 1;
-		
-		
 
 		checkPassthrough = new Button(container, SWT.CHECK);
 		checkPassthrough.setEnabled(false);
@@ -86,99 +80,90 @@ public class FacadePageTwo extends WizardPage {
 			@Override
 			public void widgetSelected(SelectionEvent event) {
 
-				
 			}
 		});
 
-		
-
 		groupparticular = new Group(container, SWT.NONE);
 		groupparticular.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		//groupfmg.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+		// groupfmg.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
 		groupparticular.setLayout(new GridLayout(4, false));
 
 		Label label4 = new Label(groupparticular, SWT.NONE);
 		label4.setText(FacadeConstants.MSG_BANK_LABEL);
 
-		List<Object> listapps = null;
-		
+		bankText = new Text(groupparticular, SWT.BORDER | SWT.SINGLE);
+		bankText.setText("");
 
-		setCombobanks(new Combo(groupparticular, SWT.READ_ONLY));
-		getCombobanks().setBounds(50, 50, 150, 65);
-		String arraybanks[] = {"BAVV", "BBOG", "BPOP", "BOCC"};
-
-		getCombobanks().setItems(arraybanks);
-
-		getCombobanks().addSelectionListener(new SelectionAdapter() {
-
-			@Override
-			public void widgetSelected(SelectionEvent event) {
-				
-
-			}
-		});
-
-		
+		// setCombobanks(new Combo(groupparticular, SWT.READ_ONLY));
+		// getCombobanks().setBounds(50, 50, 150, 65);
+		// String arraybanks[] = {"BAVV", "BBOG", "BPOP", "BOCC"};
+		//
+		// getCombobanks().setItems(arraybanks);
+		//
+		// getCombobanks().addSelectionListener(new SelectionAdapter() {
+		//
+		// @Override
+		// public void widgetSelected(SelectionEvent event) {
+		//
+		//
+		// }
+		// });
 
 		Label labelCntl = new Label(groupparticular, SWT.NONE);
-		labelCntl.setText("Cod Service:");
+		labelCntl.setText(FacadeConstants.COD_SERVICE);
 
 		codserviceText = new Text(groupparticular, SWT.BORDER | SWT.SINGLE);
 		codserviceText.setText("");
-
-		
 
 		addParticularButton = new Button(container, SWT.BUTTON1);
 		addParticularButton.setText("Add Specific");
 
 		addParticularButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		
+
 		addParticularButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				if (event.widget == addParticularButton) {
-					BAthSpecificBo athSpecificBo = new BAthSpecificBo();
-					
-					athSpecificBo.setName(facadeProject.getSrvName());
-					athSpecificBo.setBankOrg(combobanks.getText());
-					athSpecificBo.setCodService(codserviceText.getText());
-					
-					getListOrchestables().add(athSpecificBo); 
-					getListSpecificsBo().add(athSpecificBo); 
-					
-					listDescSteps.removeAll();
-					
-					Iterator<BAthOrchestable> iterator = getListOrchestables().iterator();
-					numberOrchestables = 1; 
-					
-					while (iterator.hasNext()) {
-						BAthOrchestable bStepOrchestable = (BAthOrchestable) iterator.next();
-						listDescSteps.add("Specific " + numberOrchestables + "->|"+ bStepOrchestable.getLongDescription());
-						numberOrchestables++;
-					}
-					
+					if (bankText.getText().length() > 0 && codserviceText.getText().length() > 0) {
+						BAthSpecificBo athSpecificBo = new BAthSpecificBo();
 
-					checkPassthrough.setSelection(true);
-					
+						athSpecificBo.setName(facadeProject.getSrvName());
+						athSpecificBo.setBankOrg(bankText.getText());
+						athSpecificBo.setCodService(codserviceText.getText());
+
+						getListOrchestables().add(athSpecificBo);
+						getListSpecificsBo().add(athSpecificBo);
+
+						listDescSteps.removeAll();
+
+						Iterator<BAthOrchestable> iterator = getListOrchestables().iterator();
+						numberOrchestables = 1;
+
+						while (iterator.hasNext()) {
+							BAthOrchestable bStepOrchestable = (BAthOrchestable) iterator.next();
+							listDescSteps.add(
+									"Specific " + numberOrchestables + "->|" + bStepOrchestable.getLongDescription());
+							numberOrchestables++;
+						}
+
+						checkPassthrough.setSelection(true);
+					}
+
 				}
 			}
 		});
-		
-		
 
 		listDescSteps = new org.eclipse.swt.widgets.List(container, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
 		listDescSteps.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		
-		//listSteps.setBounds(50, 50, 650, 65);
-		
+
+		// listSteps.setBounds(50, 50, 650, 65);
+
 		listDescSteps.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		
-		
-		
+
 		clearParticularButton = new Button(container, SWT.BUTTON1);
 		clearParticularButton.setText("Clear");
 
 		clearParticularButton.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
-		
+
 		clearParticularButton.addListener(SWT.Selection, new Listener() {
 			public void handleEvent(Event event) {
 				if (event.widget == clearParticularButton) {
@@ -189,22 +174,13 @@ public class FacadePageTwo extends WizardPage {
 				}
 			}
 		});
-		
-		
 
-		//setDefaultVisibility("DEFAULT");
+		// setDefaultVisibility("DEFAULT");
 
-		
 		setControl(container);
 		setPageComplete(true);
 	}
-	
-	
-	
-	
-	
-	
-	
+
 	public void setDefaultVisibility(String typeChange) {
 		if (typeChange == "DEFAULT") {
 
@@ -220,7 +196,6 @@ public class FacadePageTwo extends WizardPage {
 			group.setVisible(false);
 			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
-
 
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
@@ -268,7 +243,7 @@ public class FacadePageTwo extends WizardPage {
 			group.setVisible(false);
 			codserviceText.setVisible(false);
 			searchcntlbutton.setVisible(false);
-			
+
 			addParticularButton.setVisible(true);
 			clearParticularButton.setVisible(true);
 			listDescSteps.setVisible(true);
@@ -292,13 +267,6 @@ public class FacadePageTwo extends WizardPage {
 		}
 
 	}
-	
-	
-	
-	
-
-
-	
 
 	public Button getCheckImpl() {
 		return checkPassthrough;
@@ -334,13 +302,12 @@ public class FacadePageTwo extends WizardPage {
 
 	public Text getCntlsearchText() {
 		return codserviceText;
-	} 
+	}
 
 	public void setCntlsearchText(Text cntlsearchText) {
 		this.codserviceText = cntlsearchText;
 	}
 
-	
 	public org.eclipse.swt.widgets.List getListSteps() {
 		return listDescSteps;
 	}
@@ -350,13 +317,12 @@ public class FacadePageTwo extends WizardPage {
 	}
 
 	public Integer getNumberParticulars() {
-		return numberOrchestables; 
+		return numberOrchestables;
 	}
 
 	public void setNumberParticulars(Integer numberSteps) {
 		this.numberOrchestables = numberSteps;
 	}
-
 
 	public BAthFacadeProject getFacadeProject() {
 		return facadeProject;
@@ -366,61 +332,44 @@ public class FacadePageTwo extends WizardPage {
 		this.facadeProject = ctrlProject;
 	}
 
-
-
 	public List<BAthOrchestable> getListStepsOrchestables() {
 		return getListOrchestables();
 	}
-
-
 
 	public void setListStepsOrchestables(List<BAthOrchestable> listStepsOrchestables) {
 		this.setListOrchestables(listStepsOrchestables);
 	}
 
-
-
 	public Combo getCombobanks() {
 		return combobanks;
 	}
-
-
 
 	public void setCombobanks(Combo combobanks) {
 		this.combobanks = combobanks;
 	}
 
-
-
 	public List<BAthSpecificBo> getListSpecificsBo() {
 		return listSpecificsBo;
 	}
-
-
 
 	public void setListSpecificsBo(List<BAthSpecificBo> listSpecificsBo) {
 		this.listSpecificsBo = listSpecificsBo;
 	}
 
-
-
 	public List<BAthOrchestable> getListOrchestables() {
 		return listOrchestables;
 	}
 
-
-
 	public void setListOrchestables(List<BAthOrchestable> listOrchestables) {
 		this.listOrchestables = listOrchestables;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	public Text getBankText() {
+		return bankText;
+	}
+
+	public void setBankText(Text bankText) {
+		this.bankText = bankText;
+	}
+
 }
