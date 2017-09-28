@@ -1,6 +1,7 @@
 package com.ath.wmb.genflows.wizard;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -49,6 +50,8 @@ public class FacadePageOne extends WizardPage {
 
 	private LinkedHashSet<String> setOperations = new LinkedHashSet<String>();
 	private LinkedHashSet<String> setOthersNamespaces = new LinkedHashSet<String>();
+	private HashMap<String, String> mapOpMsgs = new HashMap<String, String>();
+	private HashMap<String, String> mapMsgElements = new HashMap<String, String>();
 
 	private Combo comboDomains;
 	private Combo comboChannels;
@@ -152,6 +155,9 @@ public class FacadePageOne extends WizardPage {
 					oprname = analyzerWsdl.getOprname();
 					oprnameText.setText(oprname);
 					setOperations = analyzerWsdl.getSetOperations();
+					
+					mapOpMsgs = analyzerWsdl.getMapOpMsgs();
+					mapMsgElements = analyzerWsdl.getMapMsgElements();
 
 					String arrayOperations[];
 					if (setOperations != null && !setOperations.isEmpty()) {
@@ -239,10 +245,10 @@ public class FacadePageOne extends WizardPage {
 		comboChannels = new Combo(container, SWT.READ_ONLY);
 		comboChannels.setBounds(50, 50, 150, 65);
 
-		String arrayIfxDomains[] = { "PB", "MB", "BABN", "BBS", "AVP", "OFICINAS", "NA", "PPA", "K7", "PORTAL", "OFVV",
+		String arrayChannels[] = { "PB", "MB", "BM", "BABN", "BBS", "AVP", "OFICINAS", "NA", "PPA", "K7", "PORTAL", "OFVV",
 				"INT", "PBB", "IVR", "CB" };
 
-		comboChannels.setItems(arrayIfxDomains);
+		comboChannels.setItems(arrayChannels);
 		comboChannels.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -527,6 +533,22 @@ public class FacadePageOne extends WizardPage {
 
 	public void setFacadeProject(BAthFacadeProject facadeProject) {
 		this.facadeProject = facadeProject;
+	}
+
+	public HashMap<String, String> getMapOpMsgs() {
+		return mapOpMsgs;
+	}
+
+	public void setMapOpMsgs(HashMap<String, String> mapOpMsgs) {
+		this.mapOpMsgs = mapOpMsgs;
+	}
+
+	public HashMap<String, String> getMapMsgElements() {
+		return mapMsgElements;
+	}
+
+	public void setMapMsgElements(HashMap<String, String> mapMsgElements) {
+		this.mapMsgElements = mapMsgElements;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -33,6 +34,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.json.JSONObject;
 
 import com.ath.esqltool.delegates.BAthGenerator;
 import com.ath.esqltool.delegates.BAthParticularGenerator;
@@ -165,8 +167,85 @@ public class FacadeWizard extends Wizard implements INewWizard {
 			
 			HashMap<String, String> mapNamespaces = BUtil.genOthersNamespaces(one.getSetOthersNamespaces());
 			
+			JSONObject jsonObject = new JSONObject(mapNamespaces);
+			
+			log.log(new Status(IStatus.INFO, "com.ath.wmb.genflows", "JSON namespaces:" + jsonObject.toString()));
+			
 			facadeProject.setMapOthersNamespaces(mapNamespaces);
-
+			
+			String reqMsg = null;
+			String resMsg = null;
+			String reqMsgFirstElement = null;
+			String resMsgFirstElement = null;
+			
+			
+			if (!one.getMapOpMsgs().isEmpty()) {
+				Iterator<String> iterator = one.getMapOpMsgs().keySet().iterator();
+				while (iterator.hasNext()) {
+					String operation = (String) iterator.next();
+					if (operation.equalsIgnoreCase(facadeProject.getOprName())) {
+						String strOfMsgs = one.getMapOpMsgs().get(operation);
+						//tns:getTokenInfoRequest;tns:getTokenInfoResponse;tns:getTokenInfoFault;
+						StringTokenizer tokens = new StringTokenizer(strOfMsgs.trim(), ";");
+						while (tokens.hasMoreElements()) {
+							StringBuffer bufToken = new StringBuffer((String) tokens.nextToken());
+							String str = bufToken.toString();
+							if (str.equalsIgnoreCase("fault")) {
+								continue;
+							}
+							if (bufToken.indexOf(":") != -1) {
+								str = bufToken.substring(bufToken.indexOf(":") + 1);
+							}
+							if (reqMsg == null) {
+								reqMsg = str;
+								if (one.getMapMsgElements() != null) {
+									reqMsgFirstElement = one.getMapMsgElements().get(str);
+									if (reqMsgFirstElement.indexOf(";") != -1) {
+										StringTokenizer tokenizer = new StringTokenizer(reqMsgFirstElement, ";");
+										reqMsgFirstElement = tokenizer.nextToken();
+										String nextToken = tokenizer.nextToken();
+										if (nextToken != null && nextToken.length() > 0) {
+											reqMsg = nextToken;
+										}
+									}
+								}
+								continue;
+							}
+							if (resMsg == null) {
+								resMsg = str;
+								if (one.getMapMsgElements() != null) {
+									resMsgFirstElement = one.getMapMsgElements().get(str);
+									if (resMsgFirstElement.indexOf(";") != -1) {
+										StringTokenizer tokenizer = new StringTokenizer(resMsgFirstElement, ";");
+										resMsgFirstElement = tokenizer.nextToken();
+										String nextToken = tokenizer.nextToken();
+										if (nextToken != null && nextToken.length() > 0) {
+											resMsg = nextToken;
+										}
+									}
+								}
+								continue;
+							}
+						}
+						break;
+					}
+					
+				}
+				
+			}
+			if (reqMsg != null) {
+				facadeProject.setMsgReq(reqMsg);
+			}
+			if (resMsg != null) {
+				facadeProject.setMsgRes(resMsg);
+			}
+			if (reqMsgFirstElement != null) {
+				facadeProject.setFirstMsgReqElement(reqMsgFirstElement);
+			}
+			if (resMsgFirstElement != null) {
+				facadeProject.setFirstMsgResElement(resMsgFirstElement);
+			}
+			
 			BAthGenerator generator = new BAthGenerator(); 
 
 			
@@ -198,6 +277,21 @@ public class FacadeWizard extends Wizard implements INewWizard {
 					particular.setCodService(bAthSpecific.getCodService());
 					
 					particular.setWsdlRelativePathName(facadeProject.getWsdlRelativePathName());
+					
+					if (reqMsg != null) {
+						particular.setMsgReq(reqMsg);
+					}
+					if (resMsg != null) {
+						particular.setMsgRes(resMsg);
+					}
+					if (reqMsgFirstElement != null) {
+						particular.setFirstMsgReqElement(reqMsgFirstElement);
+					}
+					if (resMsgFirstElement != null) {
+						particular.setFirstMsgResElement(resMsgFirstElement);
+					}
+					
+					particular.setMapOthersNamespaces(mapNamespaces);
 					
 					listParticulars.add(particular);
 					

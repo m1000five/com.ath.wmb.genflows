@@ -2,6 +2,7 @@ package com.ath.wmb.genflows.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -84,6 +85,10 @@ public class ParticularPageOne extends WizardPage {
 	private LinkedHashSet<String> setSpecificNamespaces = new LinkedHashSet<String>();
 	private LinkedHashSet<String> setSpecificOperations = new LinkedHashSet<String>();
 
+	
+	private HashMap<String, String> mapOpMsgs = new HashMap<String, String>();
+	private HashMap<String, String> mapMsgElements = new HashMap<String, String>();
+	
 	private Combo comboDomains;
 	private Combo comboChannels;
 	private Combo comboOperations;
@@ -187,6 +192,8 @@ public class ParticularPageOne extends WizardPage {
 		mButtonWsdl.setText("...");
 		mButtonWsdl.addSelectionListener(new SelectionListener() {
 
+			
+
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 
@@ -207,11 +214,14 @@ public class ParticularPageOne extends WizardPage {
 					AnalyzerWsdl analyzerWsdl = new AnalyzerWsdl();
 					analyzerWsdl.parse(inputSource);
 					selectWSDL = (analyzerWsdl.getDocument());
-
+					
 					namespaceSpecific = analyzerWsdl.getNamespace();
 					setSpecificNamespaces = analyzerWsdl.getNamespaces();
 					oprnameSpecific = analyzerWsdl.getOprname();
-					setSpecificOperations = analyzerWsdl.getSetOperations();
+					setSpecificOperations = analyzerWsdl.getSetOperations(); 
+					
+					mapOpMsgs = analyzerWsdl.getMapOpMsgs();
+					mapMsgElements = analyzerWsdl.getMapMsgElements();
 
 					String arrayOperations[];
 					if (setSpecificOperations != null && !setSpecificOperations.isEmpty()) {
@@ -316,9 +326,10 @@ public class ParticularPageOne extends WizardPage {
 		comboChannels = new Combo(container, SWT.READ_ONLY);
 		comboChannels.setBounds(50, 50, 150, 65);
 
-		String arrayIfxDomains[] = { "PB", "BM", "BABN" };
+		String arrayChannels[] = { "PB", "MB", "BM", "BABN", "BBS", "AVP", "OFICINAS", "NA", "PPA", "K7", "PORTAL", "OFVV",
+				"INT", "PBB", "IVR", "CB" };
 
-		comboChannels.setItems(arrayIfxDomains);
+		comboChannels.setItems(arrayChannels);
 		comboChannels.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -453,6 +464,18 @@ public class ParticularPageOne extends WizardPage {
 			oprname = analyzerWsdl.getOprname();
 
 			setOperations = analyzerWsdl.getSetOperations();
+			
+			
+			namespaceSpecific = analyzerWsdl.getNamespace();
+			setSpecificNamespaces = analyzerWsdl.getNamespaces();
+			oprnameSpecific = analyzerWsdl.getOprname();
+			setSpecificOperations = analyzerWsdl.getSetOperations();
+			
+			mapOpMsgs = analyzerWsdl.getMapOpMsgs();
+			mapMsgElements = analyzerWsdl.getMapMsgElements();
+			
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -735,6 +758,22 @@ public class ParticularPageOne extends WizardPage {
 
 	public void setCodService(String codService) {
 		this.codService = codService;
+	}
+
+	public HashMap<String, String> getMapOpMsgs() {
+		return mapOpMsgs;
+	}
+
+	public void setMapOpMsgs(HashMap<String, String> mapOpMsgs) {
+		this.mapOpMsgs = mapOpMsgs;
+	}
+
+	public HashMap<String, String> getMapMsgElements() {
+		return mapMsgElements;
+	}
+
+	public void setMapMsgElements(HashMap<String, String> mapMsgElements) {
+		this.mapMsgElements = mapMsgElements;
 	}
 
 }

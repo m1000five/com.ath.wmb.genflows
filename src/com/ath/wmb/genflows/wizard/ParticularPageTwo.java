@@ -108,6 +108,7 @@ public class ParticularPageTwo extends WizardPage {
 		checkCreateQueues = new Button(groupQueues, SWT.CHECK);
 		checkCreateQueues.setText("Create Queues in Local Queue Manager?");
 		checkCreateQueues.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, true, 1, 1));
+		checkCreateQueues.setEnabled(false);
 		
 		checkCreateQueues.addSelectionListener(new SelectionAdapter() {
 

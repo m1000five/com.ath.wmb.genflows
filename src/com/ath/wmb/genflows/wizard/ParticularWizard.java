@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -136,6 +137,82 @@ public class ParticularWizard extends Wizard implements INewWizard {
 			HashMap<String, String> mapSpecificNamespaces = BUtil.genOthersNamespaces(one.getSetSpecificNamespaces(), tmpSet);
 
 			particularProject.setMapSpecificNamespaces(mapSpecificNamespaces);
+			
+			String reqMsg = null;
+			String resMsg = null;
+			String reqMsgFirstElement = null;
+			String resMsgFirstElement = null;
+			
+			
+			if (!one.getMapOpMsgs().isEmpty()) {
+				Iterator<String> iterator = one.getMapOpMsgs().keySet().iterator();
+				while (iterator.hasNext()) {
+					String operation = (String) iterator.next();
+					if (operation.equalsIgnoreCase(particularProject.getOprName())) {
+						String strOfMsgs = one.getMapOpMsgs().get(operation);
+						//tns:getTokenInfoRequest;tns:getTokenInfoResponse;tns:getTokenInfoFault;
+						StringTokenizer tokens = new StringTokenizer(strOfMsgs.trim(), ";");
+						while (tokens.hasMoreElements()) {
+							StringBuffer bufToken = new StringBuffer((String) tokens.nextToken());
+							String str = bufToken.toString();
+							if (str.equalsIgnoreCase("fault")) {
+								continue;
+							}
+							if (bufToken.indexOf(":") != -1) {
+								str = bufToken.substring(bufToken.indexOf(":") + 1);
+							}
+							if (reqMsg == null) {
+								reqMsg = str;
+								if (one.getMapMsgElements() != null) {
+									reqMsgFirstElement = one.getMapMsgElements().get(str);
+									if (reqMsgFirstElement.indexOf(";") != -1) {
+										StringTokenizer tokenizer = new StringTokenizer(reqMsgFirstElement, ";");
+										reqMsgFirstElement = tokenizer.nextToken();
+										String nextToken = tokenizer.nextToken();
+										if (nextToken != null && nextToken.length() > 0) {
+											reqMsg = nextToken;
+										}
+									}
+								}
+								continue;
+							}
+							if (resMsg == null) {
+								resMsg = str;
+								if (one.getMapMsgElements() != null) {
+									resMsgFirstElement = one.getMapMsgElements().get(str);
+									if (resMsgFirstElement.indexOf(";") != -1) {
+										StringTokenizer tokenizer = new StringTokenizer(resMsgFirstElement, ";");
+										resMsgFirstElement = tokenizer.nextToken();
+										String nextToken = tokenizer.nextToken();
+										if (nextToken != null && nextToken.length() > 0) {
+											resMsg = nextToken;
+										}
+									}
+								}
+								continue;
+							}
+						}
+						break;
+					}
+					
+				}
+				
+			}
+			
+			if (reqMsg != null) {
+				particularProject.setMsgReq(reqMsg);
+			}
+			if (resMsg != null) {
+				particularProject.setMsgRes(resMsg);
+			}
+			
+			if (reqMsgFirstElement != null) {
+				particularProject.setFirstMsgReqElement(reqMsgFirstElement);
+			}
+			if (resMsgFirstElement != null) {
+				particularProject.setFirstMsgResElement(resMsgFirstElement);
+			}
+			
 
 			log.log(new Status(IStatus.INFO, "com.ath.wmb.genflows", particularProject.toString()));
 
