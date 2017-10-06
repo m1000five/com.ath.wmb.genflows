@@ -64,7 +64,7 @@ public class FacadePageOne extends WizardPage {
 	private Text textWSDLLocation;
 
 	private Button checkAutoIdCntl;
-	private Button checkCustomOperation;
+	private Button checkAllOperations;
 
 	private Label labelProjName;
 	private Label labelProjValue;
@@ -199,11 +199,16 @@ public class FacadePageOne extends WizardPage {
 
 		comboOperations = (new Combo(groupOperation, SWT.READ_ONLY));
 		comboOperations.setBounds(50, 50, 150, 65);
+		
+		oprnameText = new Text(groupOperation, SWT.BORDER | SWT.SINGLE);
+		oprnameText.setEnabled(false);
+		oprnameText.setText(oprname);
+		oprnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-		checkCustomOperation = new Button(groupOperation, SWT.CHECK);
-		checkCustomOperation.setText("Custom Operation");
-		checkCustomOperation.setEnabled(false);
-		checkCustomOperation.addSelectionListener(new SelectionAdapter() {
+		checkAllOperations = new Button(groupOperation, SWT.CHECK);
+		checkAllOperations.setText("All Operations Support");
+		checkAllOperations.setEnabled(true);
+		checkAllOperations.addSelectionListener(new SelectionAdapter() {
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
@@ -211,10 +216,7 @@ public class FacadePageOne extends WizardPage {
 			}
 		});
 
-		oprnameText = new Text(groupOperation, SWT.BORDER | SWT.SINGLE);
-		oprnameText.setEnabled(false);
-		oprnameText.setText(oprname);
-		oprnameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		
 
 		Label label5 = new Label(container, SWT.NONE);
 		label5.setText(FacadeConstants.SERVICE_NAME_LABEL);
@@ -487,12 +489,12 @@ public class FacadePageOne extends WizardPage {
 		this.setOperations = setOperations;
 	}
 
-	public Button getCheckCustomOperation() {
-		return checkCustomOperation;
+	public Button getCheckAllOperations() {
+		return checkAllOperations;
 	}
 
-	public void setCheckCustomOperation(Button checkCustomOperation) {
-		this.checkCustomOperation = checkCustomOperation;
+	public void setCheckAllOperations(Button checkCustomOperation) {
+		this.checkAllOperations = checkCustomOperation;
 	}
 
 	public Combo getComboOperations() {
